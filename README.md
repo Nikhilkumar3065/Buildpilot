@@ -82,3 +82,16 @@ Stores client problems and descriptions associated with a workspace.
 ## Project Repository
 
 GitHub - BuildPilot : https://github.com/Nikhilkumar3065/Buildpilot
+
+## Tools
+
+| Tool Name | Who Runs It | Purpose |
+|---|---|---|
+| create_branch | Code | Creates a new Git branch for AI changes |
+| list_files | Code | Lists files in the project repository |
+| read_file | Code | Reads a file from the repository |
+| commit_and_push | Code | Commits changes and pushes them to GitHub |
+| open_pull_request | Code | Creates a pull request for review |
+| change_task_status | Code | Updates the status of a task |
+| save_lesson | Code | Saves a lesson learned from a bug or task |
+| check_permission | Code | Checks whether an operation is permitted |
