@@ -96,6 +96,8 @@ GitHub - BuildPilot : https://github.com/Nikhilkumar3065/Buildpilot
 | save_lesson | Code | Saves a lesson learned from a bug or task |
 | check_permission | Code | Checks whether an operation is permitted |
 
+These tools are planned for implementation and testing during the upcoming development days
+
 ## AI Model
 
 - Model: GLM 5.3 Flash
