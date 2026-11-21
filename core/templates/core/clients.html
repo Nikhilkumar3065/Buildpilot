@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPilot - Clients</title>
+</head>
+<body>
+
+    <h1>BuildPilot</h1>
+    <h2>Clients</h2>
+
+    <h3>Add New Client</h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Save Client</button>
+    </form>
+
+    <hr>
+
+    <h3>Client List</h3>
+
+    {% for client in clients %}
+        <div>
+            <h4>{{ client.name }}</h4>
+            <p>Email: {{ client.email }}</p>
+        </div>
+    {% empty %}
+        <p>No clients added yet.</p>
+    {% endfor %}
+
+    <a href="/">Back to Home</a>
+
+</body>
+</html>

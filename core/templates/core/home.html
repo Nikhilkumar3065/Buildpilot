@@ -17,5 +17,14 @@
     {% endif %}
 
     <p>Logged in as: {{ request.user.username }}</p>
+    <hr>
+
+<h3>Project Setup</h3>
+
+<a href="{% url 'clients' %}">Manage Clients</a>
+
+<br><br>
+
+<a href="{% url 'problems' %}">Manage Client Problems</a>
 </body>
 </html>

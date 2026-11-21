@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPilot - Client Problems</title>
+</head>
+<body>
+
+    <h1>BuildPilot</h1>
+    <h2>Client Problems</h2>
+
+    <h3>Add Client Problem</h3>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <button type="submit">Save Problem</button>
+    </form>
+
+    <hr>
+
+    <h3>Saved Problems</h3>
+
+    {% for problem in problems %}
+        <div>
+            <h4>{{ problem.client.name }}</h4>
+            <p>{{ problem.description }}</p>
+        </div>
+    {% empty %}
+        <p>No problems added yet.</p>
+    {% endfor %}
+
+    <a href="/">Back to Home</a>
+
+</body>
+</html>
