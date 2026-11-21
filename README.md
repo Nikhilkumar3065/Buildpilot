@@ -95,3 +95,10 @@ GitHub - BuildPilot : https://github.com/Nikhilkumar3065/Buildpilot
 | change_task_status | Code | Updates the status of a task |
 | save_lesson | Code | Saves a lesson learned from a bug or task |
 | check_permission | Code | Checks whether an operation is permitted |
+
+## AI Model
+
+- Model: GLM 5.3 Flash
+- Provider: OpenRouter
+- Hosting: OpenRouter API
+- Reason: Supports tool calling and is suitable for coding and AI agent workflows.
