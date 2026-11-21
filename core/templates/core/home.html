@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPilot - Workspace</title>
+</head>
+<body>
+    <h1>Welcome to BuildPilot!</h1>
+
+    <h2>Your Workspace</h2>
+
+    {% if workspace %}
+        <p>Workspace Name: {{ workspace.name }}</p>
+    {% else %}
+        <p>No workspace found.</p>
+    {% endif %}
+
+    <p>Logged in as: {{ request.user.username }}</p>
+</body>
+</html>
