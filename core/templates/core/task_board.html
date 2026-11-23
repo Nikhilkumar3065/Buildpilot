@@ -1,0 +1,629 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Task Board | BuildPilot</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1500px;
+            margin: auto;
+        }
+
+        /* Header */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #172554;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            background: #2563eb;
+            color: white;
+            padding: 11px 18px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .back-link:hover {
+            background: #1d4ed8;
+        }
+
+        /* Board */
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(250px, 1fr));
+            gap: 20px;
+            align-items: start;
+        }
+
+        .column {
+            background: #e9eef7;
+            border: 1px solid #dce4f0;
+            border-radius: 12px;
+            padding: 16px;
+            min-height: 230px;
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .column-header h2 {
+            font-size: 15px;
+            color: #334155;
+        }
+
+        .column-label {
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 20px;
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        /* Task Cards */
+
+        .task-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 16px;
+            margin-bottom: 13px;
+            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
+            transition: 0.2s;
+        }
+
+        .task-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+        }
+
+        .task-number {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #2563eb;
+            background: #eff6ff;
+            padding: 5px 8px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .task-card h3 {
+            font-size: 14px;
+            color: #1e293b;
+            margin-bottom: 9px;
+            line-height: 1.5;
+        }
+
+        .task-card p {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #64748b;
+            margin-bottom: 15px;
+        }
+
+        /* Status Form */
+
+        .status-form {
+            border-top: 1px solid #edf0f5;
+            padding-top: 12px;
+        }
+
+        .status-form label {
+            display: block;
+            font-size: 11px;
+            font-weight: 700;
+            color: #64748b;
+            margin-bottom: 7px;
+        }
+
+        .status-form select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 7px;
+            background: #f8fafc;
+            color: #334155;
+            font-size: 12px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .status-form select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 13px;
+            padding: 25px 10px;
+        }
+
+        /* Responsive */
+
+        @media (max-width: 1000px) {
+            .board {
+                grid-template-columns: repeat(2, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 650px) {
+            body {
+                padding: 15px;
+            }
+
+            .board {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 23px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Page Header -->
+
+    <div class="header">
+
+        <div>
+            <h1>Project Task Board</h1>
+
+            <p>
+                {{ problem.client.name }}
+                |
+                {{ problem.description|truncatechars:90 }}
+            </p>
+        </div>
+
+        <a
+            href="{% url 'technical_plan' problem.id %}"
+            class="back-link"
+        >
+            Back to Technical Plan
+        </a>
+
+    </div>
+
+
+    <!-- Task Board Columns -->
+
+    <div class="board">
+
+        <!-- Backlog Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>Backlog</h2>
+                <span class="column-label">Backlog</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'backlog' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Ready for AI Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>Ready for AI</h2>
+                <span class="column-label">Ready</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'ready_ai' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- AI Building Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>AI Building</h2>
+                <span class="column-label">Building</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'ai_building' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Needs Human Check Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>Needs Human Check</h2>
+                <span class="column-label">Review</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'needs_human_check' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Done Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>Done</h2>
+                <span class="column-label">Completed</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'done' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+
+        <!-- Sent Back Column -->
+
+        <div class="column">
+
+            <div class="column-header">
+                <h2>Sent Back</h2>
+                <span class="column-label">Rework</span>
+            </div>
+
+            {% for task in tasks %}
+
+                {% if task.status == 'sent_back' %}
+
+                    <div class="task-card">
+
+                        <span class="task-number">
+                            Task #{{ task.task_order }}
+                        </span>
+
+                        <h3>{{ task.title }}</h3>
+
+                        <p>{{ task.description }}</p>
+
+                        <form method="POST" class="status-form">
+
+                            {% csrf_token %}
+
+                            <input
+                                type="hidden"
+                                name="task_id"
+                                value="{{ task.id }}"
+                            >
+
+                            <label>Update Status</label>
+
+                            <select
+                                name="status"
+                                onchange="this.form.submit()"
+                            >
+
+                                {% for value, label in status_choices %}
+
+                                    <option
+                                        value="{{ value }}"
+                                        {% if task.status == value %}selected{% endif %}
+                                    >
+                                        {{ label }}
+                                    </option>
+
+                                {% endfor %}
+
+                            </select>
+
+                        </form>
+
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>

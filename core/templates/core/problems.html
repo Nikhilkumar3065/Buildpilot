@@ -28,7 +28,14 @@
         <div>
             <h4>{{ problem.client.name }}</h4>
             <p>{{ problem.description }}</p>
+
+            <a href="{% url 'brainstorm' problem.id %}">
+                Start Brainstorming
+            </a>
         </div>
+
+        <hr>
+
     {% empty %}
         <p>No problems added yet.</p>
     {% endfor %}

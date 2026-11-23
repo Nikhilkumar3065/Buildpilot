@@ -1,0 +1,326 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>BuildPilot - Technical Plan</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 30px;
+            color: #333;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0, 0, 0, 0.06);
+        }
+
+        h1, h2, h3, h4 {
+            color: #243b64;
+        }
+
+        h1 {
+            margin-top: 0;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 450px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-family: Arial, sans-serif;
+            font-size: 15px;
+            line-height: 1.7;
+            resize: vertical;
+        }
+
+        button {
+            background: #3159a5;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 8px;
+            margin-bottom: 8px;
+        }
+
+        button:hover {
+            background: #244681;
+        }
+
+        .status {
+            background: #eef3ff;
+            padding: 14px;
+            border-radius: 7px;
+            margin: 15px 0;
+        }
+
+        .approved {
+            color: #198754;
+            font-weight: bold;
+        }
+
+        .error {
+            color: #dc3545;
+            background: #fff0f0;
+            padding: 12px;
+            border-radius: 7px;
+        }
+
+        form {
+            margin-bottom: 20px;
+        }
+
+        .plan-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 22px;
+            background: #f8faff;
+            border: 1px solid #e1e7f0;
+            border-radius: 8px;
+            font-size: 15px;
+            line-height: 1.8;
+            color: #333;
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+
+        .plan-content h1,
+        .plan-content h2,
+        .plan-content h3,
+        .plan-content h4 {
+            color: #243b64;
+            margin-top: 22px;
+            margin-bottom: 12px;
+        }
+
+        .plan-content p {
+            margin-bottom: 14px;
+        }
+
+        .plan-content ul,
+        .plan-content ol {
+            padding-left: 25px;
+        }
+
+        .plan-content li {
+            margin-bottom: 7px;
+        }
+
+        .plan-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 18px 0;
+            display: block;
+            overflow-x: auto;
+        }
+
+        .plan-content th,
+        .plan-content td {
+            border: 1px solid #dce2ec;
+            padding: 11px;
+            text-align: left;
+        }
+
+        .plan-content th {
+            background: #eef3ff;
+            color: #243b64;
+        }
+
+        .plan-content pre {
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .plan-content code {
+            overflow-wrap: anywhere;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .approve-button {
+            background: #198754;
+        }
+
+        .approve-button:hover {
+            background: #146c43;
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3159a5;
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 18px;
+            }
+
+            .plan-content {
+                padding: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>BuildPilot</h1>
+
+    <h2>Technical Plan</h2>
+
+    <p>
+        <strong>Client:</strong>
+        {{ problem.client.name }}
+    </p>
+
+    <p>
+        <strong>Problem:</strong>
+        {{ problem.description }}
+    </p>
+
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+    {% if plan %}
+
+        <div class="status">
+            <strong>Status:</strong>
+            {{ plan.get_status_display }}
+        </div>
+
+        {% if plan.status == 'approved' %}
+
+            <p class="approved">
+                Technical Plan Approved
+            </p>
+            <a href="{% url 'task_board' problem.id %}">
+    Open Task Board
+</a>
+
+            <h3>Approved Technical Plan</h3>
+
+            <div class="plan-content">
+                {{ plan_html|safe }}
+            </div>
+
+        {% else %}
+
+            <h3>Review Technical Plan</h3>
+
+            <h4>Formatted Preview</h4>
+
+            <div class="plan-content">
+                {{ plan_html|safe }}
+            </div>
+
+            <h4>Edit Technical Plan</h4>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="section">
+                    {{ form.content }}
+                </div>
+
+                <div class="button-group">
+
+                    <button type="submit">
+                        Save Technical Plan
+                    </button>
+
+                </div>
+            </form>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="approve"
+                >
+
+                <button
+                    type="submit"
+                    class="approve-button"
+                >
+                    Approve Technical Plan
+                </button>
+            </form>
+
+        {% endif %}
+
+    {% else %}
+
+        <p>
+            No technical plan has been generated yet.
+        </p>
+
+        <form method="POST">
+            {% csrf_token %}
+
+            <input
+                type="hidden"
+                name="action"
+                value="generate"
+            >
+
+            <button type="submit">
+                Generate Technical Plan with AI
+            </button>
+        </form>
+
+    {% endif %}
+
+    <a
+        href="{% url 'requirements' problem.id %}"
+        class="back-link"
+    >
+        Back to Requirements
+    </a>
+
+</div>
+
+</body>
+</html>

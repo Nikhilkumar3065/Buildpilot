@@ -6,4 +6,30 @@ urlpatterns = [
     path('', views.home, name='home'),
     path('clients/', views.clients, name='clients'),
     path('problems/', views.problems, name='problems'),
+
+    path(
+        'brainstorm/<int:problem_id>/',
+        views.brainstorm,
+        name='brainstorm'
+    ),
+    path(
+    'requirements/<int:problem_id>/',
+    views.requirements,
+    name='requirements'
+    ),
+    path(
+        'technical_plan/<int:problem_id>/',
+        views.technical_plan,
+        name='technical_plan'
+    ),
+    path(
+    'technical-plan/<int:problem_id>/',
+    views.technical_plan,
+    name='technical_plan'
+    ),
+    path(
+        'task-board/<int:problem_id>/',
+        views.task_board,
+        name='task_board'
+    ), 
 ]

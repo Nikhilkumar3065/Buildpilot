@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BuildPilot - Requirements Document</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        h1, h2 {
+            color: #243b64;
+        }
+
+        .section {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 7px;
+            font-family: Arial, sans-serif;
+        }
+
+        button {
+            background: #3159a5;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 7px;
+            cursor: pointer;
+        }
+
+        .version {
+            background: #eef3ff;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 7px;
+        }
+
+        .approved {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h1>BuildPilot</h1>
+    <h2>Requirements Document</h2>
+
+    <p><strong>Client:</strong> {{ problem.client.name }}</p>
+
+    <p><strong>Problem:</strong> {{ problem.description }}</p>
+
+    {% if document %}
+
+        <p><strong>Status:</strong> {{ document.get_status_display }}</p>
+
+        <h3>Document Versions</h3>
+
+        {% for version in versions %}
+            <div class="version">
+                Version {{ version.version_number }}
+                - {{ version.created_at }}
+            </div>
+        {% endfor %}
+
+        {% if document.status == 'approved' %}
+
+    <p class="approved">Approved by client</p>
+
+    <a href="{% url 'technical_plan' problem.id %}">continue to technical plan</a>
+
+{% else %}
+
+    <form method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="approve">
+
+        <button type="submit">
+            Approved by client
+        </button>
+    </form>
+
+            <h3>Edit Requirements Document</h3>
+
+            <form method="POST">
+                {% csrf_token %}
+
+                <div class="section">
+                    <label>Problem</label>
+                    {{ form.problem_statement }}
+                </div>
+
+                <div class="section">
+                    <label>Users</label>
+                    {{ form.users }}
+                </div>
+
+                <div class="section">
+                    <label>Must Do</label>
+                    {{ form.must_do }}
+                </div>
+
+                <div class="section">
+                    <label>Must Not Do</label>
+                    {{ form.must_not_do }}
+                </div>
+
+                <div class="section">
+                    <label>Success Criteria</label>
+                    {{ form.success_criteria }}
+                </div>
+
+                <div class="section">
+                    <label>Open Questions</label>
+                    {{ form.open_questions }}
+                </div>
+
+                <button type="submit">Save New Version</button>
+            </form>
+
+        {% endif %}
+
+    {% else %}
+
+        <p>Requirements document has not been generated yet.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="generate">
+
+            <button type="submit">
+                Generate Requirements with AI
+            </button>
+        </form>
+
+    {% endif %}
+
+    <br><br>
+    <a href="{% url 'brainstorm' problem.id %}">Back to Brainstorming</a>
+
+</div>
+
+</body>
+</html>

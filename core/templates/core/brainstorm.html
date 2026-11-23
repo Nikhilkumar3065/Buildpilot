@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>BuildPilot - Brainstorming</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        h2 {
+            color: #243b64;
+        }
+
+        .problem {
+            background: #eef3ff;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .message {
+            padding: 12px 15px;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+        }
+
+        .ai {
+            background: #eaf0ff;
+            margin-right: auto;
+        }
+
+        .consultant {
+            background: #dff7e8;
+            margin-left: auto;
+        }
+
+        .sender {
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+        }
+
+        textarea {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            resize: vertical;
+        }
+
+        button {
+            background: #3159a5;
+            color: white;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #244681;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+
+    <h2>BuildPilot Brainstorming</h2>
+
+    <div class="problem">
+        <strong>Client:</strong> {{ problem.client.name }}
+        <br><br>
+        <strong>Problem:</strong>
+        <p>{{ problem.description }}</p>
+    </div>
+
+    <div class="chat-box">
+
+        {% for item in messages %}
+
+            <div class="message {{ item.sender }}">
+
+                <div class="sender">
+                    {% if item.sender == 'ai' %}
+                        BuildPilot AI
+                    {% else %}
+                        Consultant
+                    {% endif %}
+                </div>
+
+                {{ item.message|linebreaksbr }}
+
+            </div>
+
+        {% empty %}
+
+            <p>Starting your brainstorming conversation...</p>
+
+        {% endfor %}
+
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <textarea
+            name="message"
+            rows="3"
+            placeholder="Type your answer or add an idea..."
+            required
+        ></textarea>
+
+        <button type="submit">Send</button>
+    </form>
+
+<hr>
+
+<a href="{% url 'requirements' problem.id %}">
+    Generate / View Requirements Document
+</a>
+</div>
+
+</body>
+</html>
