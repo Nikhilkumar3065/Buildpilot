@@ -1,26 +1,8 @@
 BuildPilot
 
-BuildPilot is an application where consultants and AI collaborate to understand client problems, prepare requirements, create technical plans, and build software.
+BuildPilot is a web application where consultants and AI collaborate to understand client problems, prepare requirements, create technical plans, and organize software development tasks.
 
-The goal is to help consultants understand client requirements in plain English while AI assists with planning, coding, debugging, and software development. Human consultants review and approve the work at important stages.
-
-Project Objectives
-
-Understand client problems written in simple language.
-
-Use AI to brainstorm and clarify requirements.
-
-Generate editable requirements documents.
-
-Create technical plans from approved requirements.
-
-Convert technical plans into development tasks.
-
-Allow AI to build software through controlled development runs.
-
-Keep humans responsible for reviewing and approving AI-generated code.
-
-Learn from bugs and save project-specific lessons for future AI runs.
+The application helps consultants convert client problems written in simple English into structured requirements and technical plans. AI assists with understanding and planning, while consultants review and approve important decisions.
 
 Technology Stack
 
@@ -31,6 +13,10 @@ Technology
 Backend
 
 Python, Django
+
+Frontend
+
+HTML, CSS, JavaScript
 
 Database
 
@@ -44,51 +30,55 @@ Database Driver
 
 Psycopg
 
-Frontend
-
-HTML, CSS, JavaScript
-
 AI Integration
 
 OpenRouter API
 
 AI Model
 
-OpenRouter Free Router (openrouter/free) for initial development testing
+openrouter/free
 
 Version Control
 
-Git and GitHub
+Git, GitHub
 
 Environment Configuration
 
-Python dotenv
+python-dotenv
 
-Core Workflow
+Features
 
-BuildPilot follows a seven-step workflow.
+1. User Signup and Workspace Management
 
-1. Client Problem
+User registration and automatic login.
 
-Consultant creates a client using name and email.
+Workspace creation during signup.
 
-Consultant describes the client's problem in simple English.
+Workspace membership management.
 
-The application saves the client and problem in the consultant's workspace.
+Workspace-based data separation.
 
-2. Brainstorm
+2. Client and Problem Management
 
-AI asks questions one at a time.
+Create clients using name and email.
 
-AI suggests ideas to help understand the problem.
+Submit client problems in simple English.
 
-Consultant answers questions and adds ideas.
+View clients and problems belonging to the user's workspace.
 
-The complete brainstorming conversation is saved.
+3. AI Brainstorming
 
-3. Requirements Document
+AI asks questions to understand the client's problem.
 
-AI generates a plain-English requirements document containing:
+AI suggests ideas for further discussion.
+
+Consultants can answer questions and add ideas.
+
+Brainstorming conversations are saved.
+
+4. Requirements Document
+
+AI generates a requirements document containing:
 
 Problem Statement
 
@@ -102,79 +92,59 @@ Success Criteria
 
 Open Questions
 
-The consultant can edit the document. Every edit creates a new version. Once the client agrees, the consultant selects Approved by Client.
+Consultants can edit the requirements. Each edit is saved as a new version. The document can be approved by the client.
 
-4. Technical Plan
+5. Technical Plan
 
-AI reads the approved requirements document.
+AI generates a technical plan from the approved requirements.
 
-AI prepares a technical plan.
+The plan includes database tables, screens, and development tasks.
 
-The plan includes database tables, screens, development tasks, and development order.
+Consultants can review, edit, and approve the plan.
 
-Consultant reviews and approves the technical plan.
+Approved plans are used to generate development tasks.
 
-Approved plans generate development tasks for the task board.
+6. Task Board
 
-5. AI Build Run
+The task board organizes development tasks using six statuses:
 
-Consultant moves a task to Ready for AI.
+Status
 
-AI picks up eligible tasks during the next build run.
+Description
 
-AI creates a separate Git branch.
+Backlog
 
-AI reads project files and writes code.
+Tasks waiting to be prepared
 
-AI commits and pushes changes.
+Ready for AI
 
-AI opens a pull request.
+Tasks waiting for an AI build run
 
-The task moves to Needs Human Check.
+AI Building
 
-Build runs can be started manually and through a timer.
+AI is working on the task
 
-6. Human Check
+Needs Human Check
 
-The consultant reviews:
+Work is waiting for review
 
-AI-generated code summary.
+Done
 
-Files changed.
+Work approved by a human
 
-Git branch.
+Sent Back
 
-Pull request link.
+Work returned for changes
 
-The consultant can:
+Tasks are displayed in their development order, and their statuses can be updated through the task board.
 
-Approve the work, moving the task to Done.
-
-Send the task back with a comment.
-
-Only a human can mark a task as Done.
-
-7. Bugs and Learning
-
-Consultant reports a bug with title, steps, expected result, actual result, and related task.
-
-AI investigates the cause and fixes the bug on a new branch.
-
-AI writes a lesson based on the issue.
-
-Lessons are saved in a project-specific skill file.
-
-Every future AI build run reads the project's skill file first.
-
-Consultant can read and edit the saved lessons.
-
-Database Tables
+Database Structure
 
 BuildPilot uses PostgreSQL hosted on Supabase.
 
-All workspace-owned business records are associated with a workspace using workspace_id to support workspace-level data isolation. The Workspace table is the root workspace record.
+Workspace-owned records are associated with a workspace using workspace_id to support workspace-level data isolation.
 
-Table
+Database Table
 
 Important Columns
 
@@ -220,388 +190,147 @@ id, workspace_id, technical_plan_id, title, description, status, task_order, cre
 
 Django's built-in authentication tables are also used for user accounts.
 
-Task Board
-
-The task board supports six required statuses:
-
-Status
-
-Description
-
-Backlog
-
-Tasks waiting to be prepared
-
-Ready for AI
-
-Tasks waiting for an AI build run
-
-AI Building
-
-AI is currently working on the task
-
-Needs Human Check
-
-AI work is waiting for consultant review
-
-Done
-
-Work approved by a human
-
-Sent Back
-
-Work returned for changes
-
-Tasks are generated from the approved technical plan and displayed on the task board.
-
-Native GitHub Tools
-
-BuildPilot uses native code-based tools for repository operations.
-
-Tool Name
-
-Who Runs It
-
-Purpose
-
-create_branch
-
-Code
-
-Creates a new Git branch
-
-list_files
-
-Code
-
-Lists files in the project repository
-
-read_file
-
-Code
-
-Reads a file from the repository
-
-commit_and_push
-
-Code
-
-Commits changes and pushes them to GitHub
-
-open_pull_request
-
-Code
-
-Creates a pull request for review
-
-change_task_status
-
-Code
-
-Updates a task's status
-
-save_lesson
-
-Code
-
-Saves a lesson learned from a bug or task
-
-check_permission
-
-Code
-
-Checks whether an operation is permitted
-
-AI responsibilities: Ask questions, generate requirements, prepare technical plans, select files, write code, investigate bugs, and write lessons.
-
-Code responsibilities: Execute repository operations, enforce permissions, update task statuses, save lessons, and maintain run records.
-
-AI decides when to call the available native tools. Each run must have limits on the number of steps and cost.
-
-AI Model
-
-Initial development model: openrouter/free
+AI Integration
 
 Provider: OpenRouter
 
-Hosting: OpenRouter API
+Model configured: openrouter/free
 
-Purpose: AI-powered brainstorming, requirements generation, and technical planning.
+Execution: OpenRouter API
 
-Development testing: Successfully tested with an AI chat completion request.
+Usage: AI brainstorming, requirements generation, and technical planning.
 
-The final AI build-run model must support tool calling. The selected model must be checked against the available model list before implementation. Free models may have rate limits and are not relied upon for the final demonstration.
+Purpose: Provides AI-generated responses to assist consultants during the project workflow.
 
-The final selected model name, hosting provider, and reason for selection will be documented here after verification.
+The configured free router can select from available models. It is used for initial development and testing.
 
-Security and Workspace Isolation
+Workspace Security
 
-BuildPilot must enforce the following security requirements:
+BuildPilot applies workspace-based access restrictions.
 
-Every workspace-owned business record must be associated with its workspace.
+Users can access records belonging to their own workspace.
 
-Team A must never access Team B's clients, problems, documents, tasks, repositories, runs, or lessons.
+Client and problem listings are filtered by workspace.
 
-Workspace access must be checked on the backend.
+Workflow pages check workspace ownership before displaying a problem.
 
-Requests without authentication must not access protected resources.
+Task updates check workspace and technical plan ownership.
 
-GitHub tokens and AI API keys must be stored in environment variables.
+Unauthenticated users are redirected to the signup page.
 
-API keys must never be committed to GitHub or exposed in the application or demonstration video.
+Automated Security Tests
 
-GitHub access must be restricted to the designated demo repository.
+Security tests are located in core/tests.py.
 
-AI can only modify branches whose names start with ai/.
+The seven automated tests verify:
 
-AI must never push directly to the main branch.
+Team A cannot view Team B's clients.
 
-AI must never delete repository content.
+Team A cannot view Team B's problems.
 
-AI must never mark a task as Done.
+Team A cannot access Team B's workflow pages.
 
-Permission checks must be implemented in code, not only in AI prompts.
+Team A cannot modify Team B's tasks.
 
-Workspace isolation will be tested using two separate teams, including attempts to access and modify another team's records by ID and requests without authentication.
+Team A cannot create problems using Team B's client records.
 
-AI Build Run Log
+Delete endpoints are not exposed in the current application.
 
-Every AI build run must save a record of its execution.
+Unauthenticated users cannot access protected pages.
 
-The Run Log must capture:
+Test result: 7 tests passed.
 
-Each execution step.
+Run the tests using:
 
-Tool name.
+python manage.py test core --keepdb
 
-Input.
+Environment Configuration
 
-Result.
+Sensitive credentials are stored in a local .env file and excluded from Git using .gitignore.
 
-Execution time.
+Environment variables used by the application:
 
-Whether the step was performed by code or AI.
+DB_NAME=
+DB_USER=
+DB_PASSWORD=
+DB_HOST=
+DB_PORT=
 
-This provides visibility into how the AI builds software and how native tools are used.
+DJANGO_SECRET_KEY=
+DJANGO_DEBUG=
+DJANGO_ALLOWED_HOSTS=
 
-Demo Application: Scope Guard
+OPENROUTER_API_KEY=
 
-The demonstration application is called Scope Guard.
+Never commit database passwords, Django secret keys, or API keys to GitHub.
 
-Problem
+Installation and Setup
 
-Small software agencies often receive additional client requests that are not included in the original project scope.
+1. Clone the Repository
 
-Objective
+git clone https://github.com/Nikhilkumar3065/Buildpilot.git
+cd Buildpilot
 
-Build a simple application that helps agencies distinguish between included work and extra work.
+2. Create a Virtual Environment
 
-Main Requirements
+python -m venv venv
 
-Maintain client and project information.
+Activate it on Windows:
 
-Maintain Included and Not Included scope items.
+venv\Scripts\activate
 
-Manage project tasks.
+3. Install Dependencies
 
-Allow consultants to submit new client requests.
+pip install -r requirements.txt
 
-Classify each request as In Scope or Extra Work.
+4. Configure Environment Variables
 
-Display the classification result and explanation.
+Create a .env file in the project root and provide the required PostgreSQL, Django, and OpenRouter credentials.
 
-BuildPilot must generate the Scope Guard technical plan and use AI build runs to implement at least three tasks in a separate public GitHub repository named:
+5. Apply Database Migrations
 
-buildpilot-demo-output
+python manage.py migrate
 
-Scope Guard must be created through BuildPilot's workflow rather than manually coded as a separate application.
+6. Start the Development Server
 
-Development Stages
+python manage.py runserver
 
-Stage 1 — Days 1–6
+Open:
 
-Target submission: Wednesday, November 25, 2026.
-
-Project setup and database.
-
-User signup and workspace creation.
-
-Client and problem management.
-
-Brainstorming conversation.
-
-Requirements document and versioning.
-
-Client approval.
-
-Technical plan generation and approval.
-
-Task board and task statuses.
-
-Native GitHub tools working through simple buttons.
-
-AI model tool-calling test.
-
-Workspace isolation testing.
-
-Deployment and demonstration video.
-
-Stage 2 — Days 7–10
-
-Target submission: Sunday, November 29, 2026.
-
-AI build-run implementation.
-
-AI branch creation.
-
-AI code generation.
-
-Git commit and push.
-
-Pull request creation.
-
-Human review and approval.
-
-Send-back workflow.
-
-Bug reporting and AI bug fixing.
-
-Project-specific skill file.
-
-Run Log.
-
-Final Tools table.
-
-Deployment and final demonstration video.
-
-Submission Requirements
-
-Stage 1 Submission
-
-Live application link.
-
-Public BuildPilot GitHub repository.
-
-5–10 minute Loom demonstration with camera.
-
-Demonstrate workflow steps 1–4 using the demo client.
-
-Demonstrate GitHub branch creation and pull request.
-
-Demonstrate that two teams cannot access each other's data.
-
-Stage 2 Submission
-
-Live application link.
-
-Public BuildPilot GitHub repository.
-
-Public buildpilot-demo-output repository.
-
-10–15 minute Loom demonstration with camera.
-
-Demonstrate the complete BuildPilot workflow.
-
-Demonstrate at least three AI-built tasks.
-
-Demonstrate a task being sent back.
-
-Demonstrate bug reporting and AI bug fixing.
-
-Demonstrate lessons saved in the project skill file.
-
-Demonstrate a later AI run using the saved lessons.
-
-Demonstrate the Run Log and Tools table.
-
-Include a short note explaining what broke and how it was fixed.
-
-Current Implementation
-
-The following features have been implemented and tested:
-
-Django project setup.
-
-Supabase PostgreSQL connection.
-
-User signup.
-
-Workspace creation.
-
-Workspace membership.
-
-Automatic login after signup.
-
-Workspace display on home page.
-
-Client creation with name and email.
-
-Workspace-based client listing.
-
-Client problem submission.
-
-Workspace-based problem listing.
-
-Brainstorming conversation with AI.
-
-Saving consultant and AI messages.
-
-AI-generated requirements document.
-
-Editing requirements and saving new versions.
-
-Client approval of requirements.
-
-AI-generated technical plan.
-
-Technical plan editing and approval.
-
-AI-generated development tasks.
-
-Task board with six required statuses.
-
-Task status updates.
-
-Workspace-scoped task board access.
+http://127.0.0.1:8000/
 
 Project Repository
 
 GitHub: https://github.com/Nikhilkumar3065/Buildpilot
 
-Database Configuration
+Current Implementation
 
-Provider: Supabase
+BuildPilot currently includes:
 
-Database: PostgreSQL
+Django project and PostgreSQL database integration.
 
-Schema: public
+User signup and workspace creation.
 
-Connection: Django PostgreSQL backend using Psycopg
+Workspace membership.
 
-Environment configuration: .env
+Client and problem management.
 
-Sensitive credentials and API keys are excluded from Git using .gitignore.
+AI brainstorming with saved conversations.
 
-Development Principles
+AI-generated requirements documents.
 
-Follow the specified seven-step workflow.
+Requirements editing and version history.
 
-Keep the Scope Guard demonstration application small.
+Client approval of requirements.
 
-Use AI for planning and coding, with human review.
+AI-generated technical plans.
 
-Use code for native tools and security enforcement.
+Technical plan editing and approval.
 
-Preserve workspace-level data isolation.
+Development task generation.
 
-Keep every development run traceable.
+Task board with six statuses.
 
-Use small, meaningful Git commits.
+Workspace-based access restrictions.
 
-Understand and test all AI-generated code before accepting it.
-
-Project Name: BuildPilot
-Repository: Nikhilkumar3065/Buildpilot
-Database: PostgreSQL (Supabase)
-Backend: Django and Python
-AI Integration: OpenRouter API
+Seven automated workspace security tests.

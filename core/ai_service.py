@@ -1,8 +1,10 @@
 import os
 import json
-from django.template import response
 import requests
+
 from dotenv import load_dotenv
+
+from core.ai_tools import TOOLS, execute_tool
 
 load_dotenv()
 
@@ -36,11 +38,199 @@ def get_ai_response(messages):
 
     if not response.ok:
         raise Exception(
-        f"OpenRouter Error {response.status_code}: {response.text}"
-    )
-    result = response.json()
+            f"OpenRouter Error {response.status_code}: "
+            f"{response.text}"
+        )
 
+    result = response.json()
     return result["choices"][0]["message"]["content"]
+def run_ai_build(
+    messages,
+    max_tool_calls=5,
+    available_tools=None,
+    required_branch=None
+):
+    """
+    Run AI with GitHub tools and return actual execution results.
+    """
+
+    if not OPENROUTER_API_KEY:
+        raise ValueError("OpenRouter API key is missing.")
+
+    conversation = list(messages)
+    total_tool_calls = 0
+    tool_results = []
+
+    # Select tools allowed for this AI run.
+    active_tools = (
+        available_tools
+        if available_tools is not None
+        else TOOLS
+    )
+
+    # Create a set of allowed tool names.
+    allowed_tool_names = {
+        tool["function"]["name"]
+        for tool in active_tools
+    }
+
+    headers = {
+        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+        "Content-Type": "application/json",
+    }
+
+    while True:
+
+        payload = {
+            "model": MODEL_NAME,
+            "messages": conversation,
+            "tools": active_tools,
+            "tool_choice": "auto",
+            "temperature": 0.2,
+        }
+
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json=payload,
+            timeout=120,
+        )
+
+        if not response.ok:
+            raise Exception(
+                f"OpenRouter Tool Calling Error "
+                f"{response.status_code}: {response.text}"
+            )
+
+        result = response.json()
+        message = result["choices"][0]["message"]
+
+        tool_calls = message.get("tool_calls") or []
+
+        # AI has finished its response.
+        if not tool_calls:
+
+            final_answer = message.get("content", "")
+
+            if not final_answer:
+                raise Exception(
+                    "AI returned an empty final response."
+                )
+
+            return {
+                "final_answer": final_answer,
+                "tool_results": tool_results,
+            }
+
+        # Enforce the maximum tool-call limit.
+        if total_tool_calls + len(tool_calls) > max_tool_calls:
+            raise Exception(
+                "AI reached the maximum tool-call limit. "
+                "Execution was not confirmed."
+            )
+
+        conversation.append(message)
+
+        for tool_call in tool_calls:
+
+            total_tool_calls += 1
+
+            tool_name = tool_call["function"]["name"]
+            arguments_text = tool_call["function"]["arguments"]
+
+            try:
+
+                # Enforce tool permissions at code level.
+                if tool_name not in allowed_tool_names:
+                    raise PermissionError(
+                        f"Tool '{tool_name}' is not allowed "
+                        f"for this run."
+                    )
+
+                arguments = json.loads(arguments_text)
+
+                # Validate tool arguments.
+                if not isinstance(arguments, dict):
+                    raise ValueError(
+                        "Tool arguments must be a dictionary."
+                    )
+
+                # Enforce the exact assigned branch.
+                if required_branch is not None:
+
+                    # Restrict GitHub write operations.
+                    if tool_name in {
+                        "create_branch",
+                        "commit_and_push",
+                        "open_pull_request",
+                    }:
+
+                        if (
+                            arguments.get("branch_name")
+                            != required_branch
+                        ):
+                            raise PermissionError(
+                                "AI cannot modify an "
+                                "unauthorized branch."
+                            )
+
+                    # Restrict GitHub read operations.
+                    if tool_name == "read_file":
+
+                        requested_branch = arguments.get(
+                            "branch",
+                            "main"
+                        )
+
+                        if requested_branch not in {
+                            "main",
+                            required_branch
+                        }:
+                            raise PermissionError(
+                                "AI cannot read an "
+                                "unauthorized branch."
+                            )
+
+                # Execute the permitted GitHub tool.
+                tool_result = execute_tool(
+                    tool_name,
+                    arguments
+                )
+
+                # Store successful execution results.
+                tool_results.append({
+                    "tool": tool_name,
+                    "success": True,
+                    "result": tool_result,
+                })
+
+                if isinstance(tool_result, (dict, list)):
+                    tool_content = json.dumps(tool_result)
+                else:
+                    tool_content = str(tool_result)
+
+            except Exception as error:
+
+                error_result = {
+                    "error": str(error)
+                }
+
+                # Store failed execution results.
+                tool_results.append({
+                    "tool": tool_name,
+                    "success": False,
+                    "result": error_result,
+                })
+
+                tool_content = json.dumps(error_result)
+
+            # Return the tool result to the AI.
+            conversation.append({
+                "role": "tool",
+                "tool_call_id": tool_call["id"],
+                "content": tool_content,
+            })
+            
 def generate_technical_plan(requirements):
     messages = [
         {
@@ -78,6 +268,7 @@ def generate_technical_plan(requirements):
     ]
 
     return get_ai_response(messages)
+
 
 def generate_tasks_from_plan(plan_content):
     messages = [
@@ -125,6 +316,8 @@ def generate_tasks_from_plan(plan_content):
             raise ValueError("Invalid task returned by AI.")
 
         if not task.get("title") or not task.get("description"):
-            raise ValueError("A task is missing its title or description.")
+            raise ValueError(
+                "A task is missing its title or description."
+            )
 
     return tasks

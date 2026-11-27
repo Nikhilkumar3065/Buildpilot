@@ -1,629 +1,712 @@
-
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
     <title>Task Board | BuildPilot</title>
 
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
 
+      body {
+        font-family: Arial, sans-serif;
+        background: #f4f7fc;
+        color: #1e293b;
+        padding: 30px;
+      }
+
+      .container {
+        max-width: 1500px;
+        margin: auto;
+      }
+
+      /* Header */
+
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        color: #172554;
+        margin-bottom: 8px;
+      }
+
+      .header p {
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+      }
+
+      .back-link {
+        text-decoration: none;
+        background: #2563eb;
+        color: white;
+        padding: 11px 18px;
+        border-radius: 7px;
+        font-size: 14px;
+        font-weight: 600;
+        transition: 0.2s;
+      }
+
+      .back-link:hover {
+        background: #1d4ed8;
+      }
+
+      /* Django Messages */
+
+      .django-messages {
+        margin-bottom: 20px;
+      }
+
+      .alert-message {
+        padding: 13px 16px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        font-size: 14px;
+        background: #eff6ff;
+        color: #1d4ed8;
+        border: 1px solid #bfdbfe;
+      }
+
+      /* Board */
+
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(250px, 1fr));
+        gap: 20px;
+        align-items: start;
+      }
+
+      .column {
+        background: #e9eef7;
+        border: 1px solid #dce4f0;
+        border-radius: 12px;
+        padding: 16px;
+        min-height: 230px;
+      }
+
+      .column-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .column-header h2 {
+        font-size: 15px;
+        color: #334155;
+      }
+
+      .column-label {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 5px 9px;
+        border-radius: 20px;
+        background: #dbeafe;
+        color: #1d4ed8;
+      }
+
+      /* Task Cards */
+
+      .task-card {
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 16px;
+        margin-bottom: 13px;
+        box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
+        transition: 0.2s;
+        overflow-wrap: anywhere;
+      }
+
+      .task-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+      }
+
+      .task-number {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #2563eb;
+        background: #eff6ff;
+        padding: 5px 8px;
+        border-radius: 5px;
+        margin-bottom: 10px;
+      }
+
+      .task-card h3 {
+        font-size: 14px;
+        color: #1e293b;
+        margin-bottom: 9px;
+        line-height: 1.5;
+      }
+
+      .task-card p {
+        font-size: 13px;
+        line-height: 1.6;
+        color: #64748b;
+        margin-bottom: 15px;
+      }
+
+      /* Status Form */
+
+      .status-form {
+        border-top: 1px solid #edf0f5;
+        padding-top: 12px;
+      }
+
+      .status-form label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 7px;
+      }
+
+      .status-form select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        background: #f8fafc;
+        color: #334155;
+        font-size: 12px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      .status-form select:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+      }
+
+      /* Buttons */
+
+      .run-ai-form {
+        margin-top: 12px;
+      }
+
+      .run-ai-button {
+        width: 100%;
+        padding: 11px 16px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #2563eb, #4f46e5);
+        color: #ffffff;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .run-ai-button:hover {
+        filter: brightness(0.92);
+        transform: translateY(-2px);
+        box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
+      }
+
+      .approve-button {
+        background: #16a34a;
+      }
+
+      .send-back-button {
+        background: #dc2626;
+      }
+
+      /* Review Information */
+
+      .review-info {
+        background: #eff6ff;
+        padding: 12px;
+        border-radius: 7px;
+        margin-bottom: 15px;
+        font-size: 12px;
+        color: #1e40af;
+        line-height: 1.6;
+      }
+
+      .review-info p {
+        margin-top: 8px;
+        margin-bottom: 8px;
+      }
+
+      .review-form {
+        margin-top: 15px;
+        border-top: 1px solid #edf0f5;
+        padding-top: 12px;
+      }
+
+      .review-form label {
+        display: block;
+        font-size: 11px;
+        font-weight: 700;
+        color: #64748b;
+        margin-bottom: 7px;
+      }
+
+      .review-form textarea {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 7px;
+        resize: vertical;
+        font-family: Arial, sans-serif;
+        font-size: 12px;
+        outline: none;
+      }
+
+      .review-form textarea:focus {
+        border-color: #2563eb;
+        box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+      }
+
+      .empty-message {
+        text-align: center;
+        color: #94a3b8;
+        font-size: 13px;
+        padding: 25px 10px;
+      }
+
+      /* Responsive */
+
+      @media (max-width: 1000px) {
+        .board {
+          grid-template-columns: repeat(2, minmax(250px, 1fr));
+        }
+      }
+
+      @media (max-width: 650px) {
         body {
-            font-family: Arial, sans-serif;
-            background: #f4f7fc;
-            color: #1e293b;
-            padding: 30px;
+          padding: 15px;
         }
 
-        .container {
-            max-width: 1500px;
-            margin: auto;
-        }
-
-        /* Header */
-
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 15px;
-            margin-bottom: 30px;
+        .board {
+          grid-template-columns: 1fr;
         }
 
         .header h1 {
-            font-size: 28px;
-            color: #172554;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #64748b;
-            font-size: 14px;
+          font-size: 23px;
         }
 
         .back-link {
-            text-decoration: none;
-            background: #2563eb;
-            color: white;
-            padding: 11px 18px;
-            border-radius: 7px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: 0.2s;
+          width: 100%;
+          text-align: center;
         }
-
-        .back-link:hover {
-            background: #1d4ed8;
-        }
-
-        /* Board */
-
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(250px, 1fr));
-            gap: 20px;
-            align-items: start;
-        }
-
-        .column {
-            background: #e9eef7;
-            border: 1px solid #dce4f0;
-            border-radius: 12px;
-            padding: 16px;
-            min-height: 230px;
-        }
-
-        .column-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-        }
-
-        .column-header h2 {
-            font-size: 15px;
-            color: #334155;
-        }
-
-        .column-label {
-            font-size: 11px;
-            font-weight: 700;
-            padding: 5px 9px;
-            border-radius: 20px;
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        /* Task Cards */
-
-        .task-card {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 16px;
-            margin-bottom: 13px;
-            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
-            transition: 0.2s;
-        }
-
-        .task-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
-        }
-
-        .task-number {
-            display: inline-block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #2563eb;
-            background: #eff6ff;
-            padding: 5px 8px;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        .task-card h3 {
-            font-size: 14px;
-            color: #1e293b;
-            margin-bottom: 9px;
-            line-height: 1.5;
-        }
-
-        .task-card p {
-            font-size: 13px;
-            line-height: 1.6;
-            color: #64748b;
-            margin-bottom: 15px;
-        }
-
-        /* Status Form */
-
-        .status-form {
-            border-top: 1px solid #edf0f5;
-            padding-top: 12px;
-        }
-
-        .status-form label {
-            display: block;
-            font-size: 11px;
-            font-weight: 700;
-            color: #64748b;
-            margin-bottom: 7px;
-        }
-
-        .status-form select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #cbd5e1;
-            border-radius: 7px;
-            background: #f8fafc;
-            color: #334155;
-            font-size: 12px;
-            outline: none;
-            cursor: pointer;
-        }
-
-        .status-form select:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
-        }
-
-        .empty-message {
-            text-align: center;
-            color: #94a3b8;
-            font-size: 13px;
-            padding: 25px 10px;
-        }
-
-        /* Responsive */
-
-        @media (max-width: 1000px) {
-            .board {
-                grid-template-columns: repeat(2, minmax(250px, 1fr));
-            }
-        }
-
-        @media (max-width: 650px) {
-            body {
-                padding: 15px;
-            }
-
-            .board {
-                grid-template-columns: 1fr;
-            }
-
-            .header h1 {
-                font-size: 23px;
-            }
-        }
+      }
     </style>
-</head>
+  </head>
 
-<body>
+  <body>
+    <div class="container">
+      <!-- Page Header -->
 
-<div class="container">
-
-    <!-- Page Header -->
-
-    <div class="header">
-
+      <div class="header">
         <div>
-            <h1>Project Task Board</h1>
+          <h1>Project Task Board</h1>
 
-            <p>
-                {{ problem.client.name }}
-                |
-                {{ problem.description|truncatechars:90 }}
-            </p>
+          <p>
+            {{ problem.client.name }}
+            |
+            {{ problem.description|truncatechars:90 }}
+          </p>
         </div>
 
-        <a
-            href="{% url 'technical_plan' problem.id %}"
-            class="back-link"
-        >
-            Back to Technical Plan
-        </a>
+        <a href="{% url 'technical_plan' problem.id %}" class="back-link">Back to Technical Plan</a>
+      </div>
 
-    </div>
+      <!-- Django Messages -->
 
+      {% if messages %}
+        <div class="django-messages">
+          {% for message in messages %}
+            <div class="alert-message">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
-    <!-- Task Board Columns -->
+      <!-- Task Board Columns -->
 
-    <div class="board">
-
+      <div class="board">
         <!-- Backlog Column -->
 
         <div class="column">
+          <div class="column-header">
+            <h2>Backlog</h2>
+            <span class="column-label">Backlog</span>
+          </div>
 
+          {% for task in tasks %}
+            {% if task.status == 'backlog' %}
+
+              <div class="task-card">
+                <span class="task-number">Task #{{ task.task_order }}</span>
+
+                <h3>{{ task.title }}</h3>
+
+                <p>{{ task.description }}</p>
+
+                <form method="POST" class="status-form">
+                  {% csrf_token %}
+
+                  <input type="hidden" name="task_id" value="{{ task.id }}" />
+
+                  <input type="hidden" name="action" value="update_status" />
+
+                  <label>Update Status</label>
+
+                  <select name="status" onchange="this.form.submit()">
+                    {% for value, label in status_choices %}
+                      {% if value != 'done' and value != 'sent_back' %}
+                        <option
+                          value="{{ value }}"
+                          {% if task.status == value %}selected{% endif %}
+                          >
+                            {{ label }}
+                          </option>
+                        {% endif %}
+                      {% endfor %}
+                    </select>
+                  </form>
+                </div>
+
+              {% endif %}
+            {% endfor %}
+          </div>
+
+          <!-- Ready for AI Column -->
+
+          <div class="column">
             <div class="column-header">
-                <h2>Backlog</h2>
-                <span class="column-label">Backlog</span>
+              <h2>Ready for AI</h2>
+              <span class="column-label">Ready</span>
             </div>
 
             {% for task in tasks %}
+              {% if task.status == 'ready_ai' %}
 
-                {% if task.status == 'backlog' %}
+                <div class="task-card">
+                  <span class="task-number">Task #{% url 'technical_plan' problem.id %}7</span>
 
-                    <div class="task-card">
+                  <h3>{% url 'technical_plan' problem.id %}8</h3>
 
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
+                  <p>{% url 'technical_plan' problem.id %}9</p>
 
-                        <h3>{{ task.title }}</h3>
+                  <form method="POST" class="status-form">
+                    {% csrf_token %}
 
-                        <p>{{ task.description }}</p>
+                    <input type="hidden" name="task_id" value="{{ task.id }}" />
 
-                        <form method="POST" class="status-form">
+                    <input type="hidden" name="action" value="update_status" />
 
-                            {% csrf_token %}
+                    <label>Update Status</label>
 
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
+                    <select name="status" onchange="this.form.submit()">
+                      {% for value, label in status_choices %}
+                        {% if value != 'done' and value != 'sent_back' %}
+                          <option
+                            value="{{ value }}"
+                            {% if task.status == value %}selected{% endif %}
                             >
+                              {{ label }}
+                            </option>
+                          {% endif %}
+                        {% endfor %}
+                      </select>
+                    </form>
 
-                            <label>Update Status</label>
+                    <!-- Run AI -->
 
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
+                    <form method="POST" action="{% url 'run_ai_task' problem.id task.id %}" class="run-ai-form">
+                      {% csrf_token %}
 
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
-                    </div>
+                      <button type="submit" class="run-ai-button">🤖 Run AI</button>
+                    </form>
+                  </div>
 
                 {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- Ready for AI Column -->
-
-        <div class="column">
-
-            <div class="column-header">
-                <h2>Ready for AI</h2>
-                <span class="column-label">Ready</span>
+              {% endfor %}
             </div>
 
-            {% for task in tasks %}
+            <!-- AI Building Column -->
 
-                {% if task.status == 'ready_ai' %}
-
-                    <div class="task-card">
-
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
-
-                        <h3>{{ task.title }}</h3>
-
-                        <p>{{ task.description }}</p>
-
-                        <form method="POST" class="status-form">
-
-                            {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
-                            >
-
-                            <label>Update Status</label>
-
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
-
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
-                    </div>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- AI Building Column -->
-
-        <div class="column">
-
-            <div class="column-header">
+            <div class="column">
+              <div class="column-header">
                 <h2>AI Building</h2>
                 <span class="column-label">Building</span>
-            </div>
+              </div>
 
-            {% for task in tasks %}
-
+              {% for task in tasks %}
                 {% if task.status == 'ai_building' %}
 
-                    <div class="task-card">
+                  <div class="task-card">
+                    <span class="task-number">Task #{{ task.task_order }}</span>
 
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
+                    <h3>{{ task.title }}</h3>
 
-                        <h3>{{ task.title }}</h3>
+                    <p>{{ task.description }}</p>
 
-                        <p>{{ task.description }}</p>
+                    <form method="POST" class="status-form">
+                      {% csrf_token %}
 
-                        <form method="POST" class="status-form">
+                      <input type="hidden" name="task_id" value="{{ task.id }}" />
 
-                            {% csrf_token %}
+                      <input type="hidden" name="action" value="update_status" />
 
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
-                            >
+                      <label>Update Status</label>
 
-                            <label>Update Status</label>
-
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
-
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
+                      <select name="status" onchange="this.form.submit()">
+                        {% for value, label in status_choices %}
+                          {% if value != 'done' and value != 'sent_back' %}
+                            <option
+                              value="{{ value }}"
+                              {% if task.status == value %}selected{% endif %}
+                              >
+                                {{ label }}
+                              </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </form>
                     </div>
 
-                {% endif %}
+                  {% endif %}
+                {% endfor %}
+              </div>
 
-            {% endfor %}
+              <!-- Needs Human Check Column -->
 
-        </div>
+              <div class="column">
+                <div class="column-header">
+                  <h2>Needs Human Check</h2>
+                  <span class="column-label">Review</span>
+                </div>
 
+                {% for task in tasks %}
+                  {% if task.status == 'needs_human_check' %}
 
-        <!-- Needs Human Check Column -->
+                    <div class="task-card">
+                      <span class="task-number">Task #{{ task.task_order }}</span>
 
-        <div class="column">
+                      <h3>{{ task.title }}</h3>
 
-            <div class="column-header">
-                <h2>Needs Human Check</h2>
-                <span class="column-label">Review</span>
+                      <p>{{ task.description }}</p>
+
+                      <div class="review-info">
+                        <strong>Human Review Required</strong>
+
+                        <p>
+                          Review the AI-generated changes and GitHub pull request before
+                          approving this task.
+                        </p>
+                      </div>
+
+                      <!-- Approve -->
+
+                      <form method="POST" class="run-ai-form">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="task_id" value="{{ task.id }}" />
+
+                        <input type="hidden" name="action" value="approve" />
+
+                        <button type="submit" class="run-ai-button approve-button">
+                          ✓ Approve
+                        </button>
+                      </form>
+
+                      <!-- Send Back -->
+
+                      <form method="POST" class="review-form">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="task_id" value="{{ task.id }}" />
+
+                        <input type="hidden" name="action" value="send_back" />
+
+                        <label>Feedback for AI (Required)</label>
+
+                        <textarea
+                          name="review_comment"
+                          rows="3"
+                          required
+                          placeholder="Explain what needs to be fixed..."
+                        ></textarea>
+
+                        <button
+                          type="submit"
+                          class="run-ai-button send-back-button"
+                          style="margin-top: 10px"
+                        >
+                          ↩ Send Back
+                        </button>
+                      </form>
+                    </div>
+
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- Done Column -->
+
+              <div class="column">
+                <div class="column-header">
+                  <h2>Done</h2>
+                  <span class="column-label">Completed</span>
+                </div>
+
+                {% for task in tasks %}
+                  {% if task.status == 'done' %}
+
+                    <div class="task-card">
+                      <span class="task-number">Task #{{ task.task_order }}</span>
+
+                      <h3>{{ task.title }}</h3>
+
+                      <p>{{ task.description }}</p>
+
+                      <div
+                        class="review-info"
+                        style="background: #dcfce7; color: #166534"
+                      >
+                        ✓ Approved by human reviewer
+                      </div>
+                    </div>
+
+                  {% endif %}
+                {% endfor %}
+              </div>
+
+              <!-- Sent Back Column -->
+
+              <div class="column">
+                <div class="column-header">
+                  <h2>Sent Back</h2>
+                  <span class="column-label">Rework</span>
+                </div>
+
+                {% for task in tasks %}
+                  {% if task.status == 'sent_back' %}
+
+                    <div class="task-card">
+                      <span class="task-number">Task #{{ task.task_order }}</span>
+
+                      <h3>{{ task.title }}</h3>
+
+                      <p>{{ task.description }}</p>
+
+                      <!-- Display Human Review Feedback -->
+
+                      {% if task.review_comment %}
+
+                        <div
+                          class="review-info"
+                          style="background: #fef2f2; color: #991b1b"
+                        >
+                          <strong>Human Review Feedback</strong>
+
+                          <p>
+                            {{ task.review_comment }}
+                          </p>
+
+                          {% if task.reviewed_at %}
+                            <small>
+                              Reviewed:
+                              {{ task.reviewed_at|date:"d M Y, h:i A" }}
+                            </small>
+                          {% endif %}
+                        </div>
+
+                      {% endif %}
+                      {% if task.ai_branch and task.pull_request_url %}
+
+                        <form method="POST" action="{% url 'run_ai_task' problem.id task.id %}">
+                          {% csrf_token %}
+
+                          <button
+                            type="submit"
+                            style="
+                              width: 100%;
+                              padding: 12px;
+                              margin-top: 12px;
+                              background: #2563eb;
+                              color: white;
+                              border: none;
+                              border-radius: 8px;
+                              font-weight: 600;
+                              cursor: pointer;
+                            "
+                          >
+                            🤖 Re-run AI with Feedback
+                          </button>
+                        </form>
+
+                        <a
+                          href="{{ task.pull_request_url }}"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style="
+                            display: block;
+                            margin-top: 10px;
+                            color: #2563eb;
+                            text-decoration: none;
+                            font-size: 13px;
+                          "
+                        >
+                          View Existing Pull Request ↗
+                        </a>
+
+                      {% else %}
+
+                        <p style="color: #dc2626; font-size: 12px">
+                          Existing GitHub branch or pull request details are missing.
+                        </p>
+
+                      {% endif %}
+
+                      <!-- Update Task Status -->
+
+                      <form method="POST" class="status-form">
+                        {% csrf_token %}
+
+                        <input type="hidden" name="task_id" value="{{ task.id }}" />
+
+                        <input type="hidden" name="action" value="update_status" />
+
+                        <label>Update Status</label>
+
+                        <select name="status" onchange="this.form.submit()">
+                          {% for value, label in status_choices %}
+                            {% if value != 'done' and value != 'sent_back' %}
+                              <option
+                                value="{{ task.task_order }}0"
+                                {{ task.task_order }}1selected{{ task.task_order }}2
+                              >
+                                {{ label }}
+                              </option>
+                            {% endif %}
+                          {% endfor %}
+                        </select>
+                      </form>
+                    </div>
+
+                  {% endif %}
+                {% endfor %}
+              </div>
             </div>
-
-            {% for task in tasks %}
-
-                {% if task.status == 'needs_human_check' %}
-
-                    <div class="task-card">
-
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
-
-                        <h3>{{ task.title }}</h3>
-
-                        <p>{{ task.description }}</p>
-
-                        <form method="POST" class="status-form">
-
-                            {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
-                            >
-
-                            <label>Update Status</label>
-
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
-
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
-                    </div>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- Done Column -->
-
-        <div class="column">
-
-            <div class="column-header">
-                <h2>Done</h2>
-                <span class="column-label">Completed</span>
-            </div>
-
-            {% for task in tasks %}
-
-                {% if task.status == 'done' %}
-
-                    <div class="task-card">
-
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
-
-                        <h3>{{ task.title }}</h3>
-
-                        <p>{{ task.description }}</p>
-
-                        <form method="POST" class="status-form">
-
-                            {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
-                            >
-
-                            <label>Update Status</label>
-
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
-
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
-                    </div>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-
-        <!-- Sent Back Column -->
-
-        <div class="column">
-
-            <div class="column-header">
-                <h2>Sent Back</h2>
-                <span class="column-label">Rework</span>
-            </div>
-
-            {% for task in tasks %}
-
-                {% if task.status == 'sent_back' %}
-
-                    <div class="task-card">
-
-                        <span class="task-number">
-                            Task #{{ task.task_order }}
-                        </span>
-
-                        <h3>{{ task.title }}</h3>
-
-                        <p>{{ task.description }}</p>
-
-                        <form method="POST" class="status-form">
-
-                            {% csrf_token %}
-
-                            <input
-                                type="hidden"
-                                name="task_id"
-                                value="{{ task.id }}"
-                            >
-
-                            <label>Update Status</label>
-
-                            <select
-                                name="status"
-                                onchange="this.form.submit()"
-                            >
-
-                                {% for value, label in status_choices %}
-
-                                    <option
-                                        value="{{ value }}"
-                                        {% if task.status == value %}selected{% endif %}
-                                    >
-                                        {{ label }}
-                                    </option>
-
-                                {% endfor %}
-
-                            </select>
-
-                        </form>
-
-                    </div>
-
-                {% endif %}
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-</div>
-
-</body>
-</html>
+          </div>
+        </body>
+      </html>

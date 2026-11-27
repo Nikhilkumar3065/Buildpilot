@@ -32,4 +32,9 @@ urlpatterns = [
         views.task_board,
         name='task_board'
     ), 
+        path(
+        'run-ai/<int:problem_id>/<int:task_id>/',
+        views.run_ai_task,
+        name='run_ai_task'
+    ),
 ]

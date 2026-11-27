@@ -209,6 +209,7 @@ class TechnicalPlan(models.Model):
 
     def __str__(self):
         return f"Technical Plan - {self.problem}"
+
 class Task(models.Model):
 
     STATUS_CHOICES = [
@@ -245,6 +246,30 @@ class Task(models.Model):
 
     task_order = models.PositiveIntegerField(
         default=1
+    )
+
+    # Human review feedback
+    review_comment = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    # Human review timestamp
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+        # AI-generated GitHub branch
+    ai_branch = models.CharField(
+        max_length=255,
+        blank=True,
+        default=''
+    )
+
+    # GitHub pull request URL
+    pull_request_url = models.URLField(
+        blank=True,
+        default=''
     )
 
     created_at = models.DateTimeField(
