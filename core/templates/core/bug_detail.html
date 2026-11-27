@@ -1,0 +1,1636 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bug Details | BuildPilot</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7fc;
+            color: #1e293b;
+            padding: 30px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+        }
+
+        /* Page Header */
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            color: #172554;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            font-size: 14px;
+            color: #64748b;
+        }
+
+        .navigation {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Buttons */
+
+        .btn {
+            display: inline-block;
+            padding: 12px 18px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .btn-outline {
+            background: white;
+            color: #2563eb;
+            border-color: #bfdbfe;
+        }
+
+        .btn-outline:hover {
+            background: #eff6ff;
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+            border-color: #cbd5e1;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #15803d;
+        }
+
+        .btn-danger {
+            background: #dc2626;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+        }
+
+        /* Bug Banner */
+
+        .bug-banner {
+            background: linear-gradient(
+                135deg, #1e40af, #2563eb
+            );
+            color: white;
+            padding: 28px;
+            border-radius: 14px;
+            margin-bottom: 25px;
+        }
+
+        .banner-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .bug-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #dbeafe;
+        }
+
+        .bug-banner h2 {
+            font-size: 24px;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            overflow-wrap: anywhere;
+        }
+
+        .banner-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        /* Bug Status */
+
+        .status {
+            display: inline-block;
+            padding: 7px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .status-reported {
+            background: #f1f5f9;
+            color: #475569;
+        }
+
+        .status-ready_ai {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .status-ai_fixing {
+            background: #ede9fe;
+            color: #6d28d9;
+        }
+
+        .status-needs_human_check {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-resolved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .status-sent_back {
+            background: #fee2e2;
+            color: #b91c1c;
+        }
+
+        /* Main Layout */
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 2fr)
+                                   minmax(0, 1fr);
+            gap: 24px;
+            align-items: start;
+        }
+
+        .card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+        }
+
+        .card h2 {
+            color: #172554;
+            font-size: 19px;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .detail-section {
+            margin-bottom: 22px;
+        }
+
+        .detail-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .detail-section h3 {
+            color: #334155;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        /* Content Boxes */
+
+        .content-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 15px;
+            font-size: 14px;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+        }
+
+        .expected-box {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            border-left: 4px solid #16a34a;
+        }
+
+        .actual-box {
+            background: #fef2f2;
+            border-color: #fecaca;
+            border-left: 4px solid #dc2626;
+        }
+
+        .lesson-box {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+            border-left: 4px solid #2563eb;
+        }
+
+        .empty-text {
+            color: #64748b;
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        /* Associated Task */
+
+        .task-title {
+            color: #1e40af;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .task-description {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.7;
+            overflow-wrap: anywhere;
+        }
+
+        /* Metadata */
+
+        .meta-row {
+            padding: 13px 0;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .meta-row:last-child {
+            border-bottom: none;
+        }
+
+        .meta-row span {
+            display: block;
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .meta-row strong {
+            font-size: 14px;
+            color: #334155;
+            overflow-wrap: anywhere;
+        }
+
+        .branch-name {
+            display: block;
+            background: #f1f5f9;
+            color: #334155;
+            padding: 12px;
+            border-radius: 7px;
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        /* Workflow Actions */
+
+        .action-description {
+            color: #64748b;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .action-form {
+            margin-bottom: 12px;
+        }
+
+        .action-form:last-child {
+            margin-bottom: 0;
+        }
+
+        .action-form .btn {
+            width: 100%;
+        }
+
+        /* Human Review Controls */
+
+        .review-form {
+            margin-top: 18px;
+        }
+
+        .review-form label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 8px;
+        }
+
+        .review-textarea {
+            width: 100%;
+            min-height: 120px;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        .review-textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px #dbeafe;
+        }
+
+        .review-help {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .review-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .review-buttons .btn {
+            width: 100%;
+        }
+
+        /* Notices */
+
+        .notice {
+            padding: 14px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            color: #1e40af;
+            font-size: 13px;
+            line-height: 1.7;
+            margin-bottom: 15px;
+        }
+
+        .notice:last-child {
+            margin-bottom: 0;
+        }
+
+        .notice-success {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+            color: #166534;
+        }
+
+        .notice-warning {
+            background: #fffbeb;
+            border-color: #fde68a;
+            color: #92400e;
+        }
+
+        .notice-processing {
+            background: #f5f3ff;
+            border-color: #ddd6fe;
+            color: #6d28d9;
+        }
+
+        /* AI Processing Indicator */
+
+        .processing-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            color: #1e40af;
+        }
+
+        .processing-box[hidden] {
+            display: none;
+        }
+
+        .processing-box strong {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .processing-box p {
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            min-width: 22px;
+            border: 3px solid #bfdbfe;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Django Messages */
+
+        .message {
+            padding: 14px 18px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            background: #eff6ff;
+            color: #1e40af;
+            border: 1px solid #bfdbfe;
+            line-height: 1.6;
+            overflow-wrap: anywhere;
+        }
+
+        .message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .message.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
+        }
+
+        .message.warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        /* Responsive Design */
+
+        @media (max-width: 850px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .bug-banner {
+                padding: 20px;
+            }
+
+            .bug-banner h2 {
+                font-size: 21px;
+            }
+
+            .card {
+                padding: 18px;
+            }
+
+            .navigation {
+                width: 100%;
+            }
+
+            .navigation .btn {
+                flex: 1;
+            }
+
+            .banner-meta {
+                gap: 12px;
+            }
+
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            .spinner {
+                animation: none;
+            }
+
+            .btn {
+                transition: none;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Page Header -->
+
+        <div class="header">
+
+            <div>
+
+                <h1>Bug Details</h1>
+
+                <p>
+                    Review, track and manage the reported issue.
+                </p>
+
+            </div>
+
+            <div class="navigation">
+
+                <a href="{% url 'bug_reports' problem.id %}"
+                   class="btn btn-outline">
+                    &larr; All Bugs
+                </a>
+
+                <a href="{% url 'task_board' problem.id %}"
+                   class="btn btn-outline">
+                    Task Board
+                </a>
+
+            </div>
+
+        </div>
+
+        <!-- Django Messages -->
+
+        {% if messages %}
+
+            {% for message in messages %}
+
+                <div class="message {{ message.tags }}"
+                     role="status">
+
+                    {{ message }}
+
+                </div>
+
+            {% endfor %}
+
+        {% endif %}
+
+        <!-- Bug Header -->
+
+        <div class="bug-banner">
+
+            <div class="banner-top">
+
+                <span class="bug-number">
+                    BUG #{{ bug.id }}
+                </span>
+
+                <span class="status status-{{ bug.status }}">
+                    {{ bug.get_status_display }}
+                </span>
+
+            </div>
+
+            <h2>{{ bug.title }}</h2>
+
+            <div class="banner-meta">
+
+                <span>
+
+                    <strong>Client:</strong>
+
+                    {{ problem.client.name }}
+
+                </span>
+
+                <span>
+
+                    <strong>Workspace:</strong>
+
+                    {{ workspace.name }}
+
+                </span>
+
+                <span>
+
+                    <strong>Reported:</strong>
+
+                    {{ bug.created_at|date:"d M Y, h:i A" }}
+
+                </span>
+
+            </div>
+
+        </div>
+
+        <div class="layout">
+
+            <!-- Main Content -->
+
+            <main>
+
+                <!-- Bug Information -->
+
+                <div class="card">
+
+                    <h2>Bug Information</h2>
+
+                    <div class="detail-section">
+
+                        <h3>Steps to Reproduce</h3>
+
+                        <div class="content-box">{{ bug.steps_to_reproduce }}</div>
+
+                    </div>
+
+                    <div class="detail-section">
+
+                        <h3>Expected Behavior</h3>
+
+                        <div class="content-box expected-box">{{ bug.expected_behavior }}</div>
+
+                    </div>
+
+                    <div class="detail-section">
+
+                        <h3>Actual Behavior</h3>
+
+                        <div class="content-box actual-box">{{ bug.actual_behavior }}</div>
+
+                    </div>
+
+                </div>
+
+                <!-- AI Diagnosis -->
+
+                <div class="card">
+
+                    <h2>AI Diagnosis</h2>
+
+                    {% if bug.ai_diagnosis %}
+
+                        <div class="content-box">{{ bug.ai_diagnosis }}</div>
+
+                    {% else %}
+
+                        <p class="empty-text">
+
+                            No AI diagnosis has been generated yet.
+                            The diagnosis will appear here after
+                            the AI bug fixing workflow runs.
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- GitHub Fix Details -->
+
+                <div class="card">
+
+                    <h2>GitHub Fix Details</h2>
+
+                    <div class="detail-section">
+
+                        <h3>AI Fix Branch</h3>
+
+                        {% if bug.ai_branch %}
+
+                            <code class="branch-name">{{ bug.ai_branch }}</code>
+
+                        {% else %}
+
+                            <p class="empty-text">
+                                No fix branch created yet.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                    <div class="detail-section">
+
+                        <h3>Pull Request</h3>
+
+                        {% if bug.pull_request_url %}
+
+                            <a href="{{ bug.pull_request_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-primary">
+
+                                View Pull Request &rarr;
+
+                            </a>
+
+                        {% else %}
+
+                            <p class="empty-text">
+                                No pull request created yet.
+                            </p>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+                <!-- Human Review Feedback -->
+
+                <div class="card">
+
+                    <h2>Human Review Feedback</h2>
+
+                    {% if bug.review_comment %}
+
+                        <div class="content-box">{{ bug.review_comment }}</div>
+
+                    {% else %}
+
+                        <p class="empty-text">
+                            No human review feedback available yet.
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Lesson Learned -->
+
+                <div class="card">
+
+                    <h2>Lesson Learned</h2>
+
+                    {% if bug.lesson %}
+
+                        {% if bug.status != 'resolved' %}
+
+                            <div class="notice notice-warning">
+
+                                This is an AI-generated proposed lesson.
+                                Human review is required before it can
+                                be accepted for future development runs.
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="notice notice-success">
+
+                                The associated bug fix has been
+                                approved by a human reviewer.
+
+                                Automatic reuse of this lesson
+                                requires the project learning system.
+
+                            </div>
+
+                        {% endif %}
+
+                        <div class="content-box lesson-box">{{ bug.lesson }}</div>
+
+                    {% else %}
+
+                        <p class="empty-text">
+
+                            No lesson has been generated yet.
+                            Lessons from bug fixes will help
+                            improve future AI development runs.
+
+                        </p>
+
+                    {% endif %}
+
+                </div>
+
+            </main>
+
+            <!-- Sidebar -->
+
+            <aside>
+
+                <!-- Associated Task -->
+
+                <div class="card">
+
+                    <h2>Associated Task</h2>
+
+                    <p class="task-title">
+
+                        <strong>
+                            Task #{{ task.task_order }}
+                        </strong>
+
+                        <br>
+
+                        {{ task.title }}
+
+                    </p>
+
+                    <p class="task-description">
+                        {{ task.description }}
+                    </p>
+
+                    <div class="meta-row">
+
+                        <span>Task Status</span>
+
+                        <strong>
+                            {{ task.get_status_display }}
+                        </strong>
+
+                    </div>
+
+                    <div class="meta-row">
+
+                        <span>Original Task Branch</span>
+
+                        {% if task.ai_branch %}
+
+                            <code class="branch-name">{{ task.ai_branch }}</code>
+
+                        {% else %}
+
+                            <strong>Not created yet</strong>
+
+                        {% endif %}
+
+                    </div>
+
+                    {% if task.pull_request_url %}
+
+                        <div class="meta-row">
+
+                            <span>Original Task Pull Request</span>
+
+                            <a href="{{ task.pull_request_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline">
+
+                                View Task PR &rarr;
+
+                            </a>
+
+                        </div>
+
+                    {% endif %}
+
+                </div>
+
+                <!-- Bug Metadata -->
+
+                <div class="card">
+
+                    <h2>Bug Summary</h2>
+
+                    <div class="meta-row">
+
+                        <span>Bug ID</span>
+
+                        <strong>#{{ bug.id }}</strong>
+
+                    </div>
+
+                    <div class="meta-row">
+
+                        <span>Current Status</span>
+
+                        <strong>
+                            {{ bug.get_status_display }}
+                        </strong>
+
+                    </div>
+
+                    <div class="meta-row">
+
+                        <span>Reported At</span>
+
+                        <strong>
+                            {{ bug.created_at|date:"d M Y, h:i A" }}
+                        </strong>
+
+                    </div>
+
+                    <div class="meta-row">
+
+                        <span>Resolved At</span>
+
+                        <strong>
+
+                            {% if bug.resolved_at %}
+
+                                {{ bug.resolved_at|date:"d M Y, h:i A" }}
+
+                            {% else %}
+
+                                Not resolved yet
+
+                            {% endif %}
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+                <!-- Workflow Actions -->
+
+                <div class="card">
+
+                    <h2>Bug Actions</h2>
+
+                    <!-- AI Processing Indicator -->
+
+                    <div id="ai-processing"
+                         class="processing-box"
+                         role="status"
+                         aria-live="polite"
+                         hidden>
+
+                        <div class="spinner"
+                             aria-hidden="true">
+                        </div>
+
+                        <div>
+
+                            <strong>
+                                AI Fix Request Submitted
+                            </strong>
+
+                            <p>
+
+                                AI will inspect the repository,
+                                diagnose the bug and attempt to
+                                create a fix pull request.
+
+                                This may take several minutes.
+                                Please wait for the result.
+
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                    <!-- Reported Status -->
+
+                    {% if bug.status == 'reported' %}
+
+                        <p class="action-description">
+
+                            Mark this bug as Ready for AI
+                            when the reported information
+                            is complete.
+
+                        </p>
+
+                        <form method="POST"
+                              action="{% url 'update_bug_status' problem.id bug.id %}"
+                              class="action-form">
+
+                            {% csrf_token %}
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="ready_ai">
+
+                            <button type="submit"
+                                    class="btn btn-primary">
+
+                                Mark Ready for AI
+
+                            </button>
+
+                        </form>
+
+                    <!-- Ready for AI Status -->
+
+                    {% elif bug.status == 'ready_ai' %}
+
+                        <div class="notice">
+
+                            This bug is ready for AI diagnosis
+                            and fixing. AI will inspect the code,
+                            propose a fix and attempt to create
+                            a GitHub pull request.
+
+                        </div>
+
+                        {% if task.ai_branch and task.pull_request_url %}
+
+                            <form method="POST"
+                                  action="{% url 'run_ai_bug' problem.id bug.id %}"
+                                  class="action-form ai-fix-form">
+
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-primary">
+
+                                    Run AI Fix
+
+                                </button>
+
+                            </form>
+
+                        {% else %}
+
+                            <div class="notice notice-warning">
+
+                                The associated task must have
+                                a GitHub branch and pull request
+                                before AI can fix this bug.
+
+                            </div>
+
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    style="width: 100%; margin-bottom: 12px;"
+                                    disabled>
+
+                                Run AI Fix
+
+                            </button>
+
+                        {% endif %}
+
+                        <form method="POST"
+                              action="{% url 'update_bug_status' problem.id bug.id %}"
+                              class="action-form">
+
+                            {% csrf_token %}
+
+                            <input type="hidden"
+                                   name="action"
+                                   value="reported">
+
+                            <button type="submit"
+                                    class="btn btn-secondary">
+
+                                Move Back to Reported
+
+                            </button>
+
+                        </form>
+
+                    <!-- AI Fixing Status -->
+
+                    {% elif bug.status == 'ai_fixing' %}
+
+                        <div class="notice notice-processing">
+
+                            <strong>AI Fixing in Progress</strong>
+
+                            <p style="margin-top: 8px;">
+
+                                AI is currently processing this bug.
+                                Wait for the execution to finish
+                                before attempting another run.
+
+                            </p>
+
+                        </div>
+
+                        <a href="{% url 'bug_detail' problem.id bug.id %}"
+                           class="btn btn-outline"
+                           style="width: 100%;">
+
+                            Refresh Status
+
+                        </a>
+
+                    <!-- Needs Human Check Status -->
+
+                    {% elif bug.status == 'needs_human_check' %}
+
+                        <div class="notice notice-warning">
+
+                            <strong>Human Review Required</strong>
+
+                            <p style="margin-top: 8px;">
+
+                                AI has proposed a fix.
+
+                                Review the diagnosis, changed files
+                                and GitHub pull request.
+
+                                Verify that the reported issue has
+                                been fixed before approving.
+
+                            </p>
+
+                        </div>
+
+                        {% if bug.pull_request_url %}
+
+                            <a href="{{ bug.pull_request_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-primary"
+                               style="width: 100%;">
+
+                                Review Fix Pull Request &rarr;
+
+                            </a>
+
+                        {% endif %}
+
+                        {% if not bug.ai_branch or not bug.pull_request_url %}
+
+                            <div class="notice notice-warning"
+                                 style="margin-top: 15px;">
+
+                                A valid fix branch and pull request
+                                are required before approval.
+
+                            </div>
+
+                        {% endif %}
+
+                        <!-- Human Review Form -->
+
+                        <form method="POST"
+                              action="{% url 'review_bug_fix' problem.id bug.id %}"
+                              class="review-form"
+                              id="bug-review-form">
+
+                            {% csrf_token %}
+
+                            <label for="review_comment">
+
+                                Review Feedback
+
+                            </label>
+
+                            <textarea
+                                id="review_comment"
+                                name="review_comment"
+                                class="review-textarea"
+                                placeholder="Enter your feedback about the proposed bug fix..."
+                                aria-describedby="review-help"
+                            ></textarea>
+
+                            <p class="review-help"
+                               id="review-help">
+
+                                Feedback is optional when approving
+                                a fix and mandatory when sending
+                                it back to AI.
+
+                            </p>
+
+                            <div class="review-buttons">
+
+                                <button type="submit"
+                                        name="action"
+                                        value="approve"
+                                        class="btn btn-success"
+                                        {% if not bug.ai_branch or not bug.pull_request_url %}disabled{% endif %}>
+
+                                    Approve Fix
+
+                                </button>
+
+                                <button type="submit"
+                                        name="action"
+                                        value="send_back"
+                                        class="btn btn-danger">
+
+                                    Send Back
+
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                        <p class="review-help"
+                           style="margin-top: 15px; margin-bottom: 0;">
+
+                            Approval updates the bug status in
+                            BuildPilot. It does not automatically
+                            merge the GitHub pull request.
+
+                        </p>
+
+                    <!-- Resolved Status -->
+
+                    {% elif bug.status == 'resolved' %}
+
+                        <div class="notice notice-success">
+
+                            <strong>Bug Resolved</strong>
+
+                            <p style="margin-top: 8px;">
+
+                                This bug has been marked resolved
+                                and approved by a human reviewer.
+
+                            </p>
+
+                            {% if bug.resolved_at %}
+
+                                <p style="margin-top: 8px;">
+
+                                    <strong>Resolved on:</strong>
+
+                                    {{ bug.resolved_at|date:"d M Y, h:i A" }}
+
+                                </p>
+
+                            {% endif %}
+
+                        </div>
+
+                        {% if bug.pull_request_url %}
+
+                            <a href="{{ bug.pull_request_url }}"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="btn btn-outline"
+                               style="width: 100%;">
+
+                                View Approved Fix PR &rarr;
+
+                            </a>
+
+                        {% endif %}
+
+                    <!-- Sent Back Status -->
+
+                    {% elif bug.status == 'sent_back' %}
+
+                        <div class="notice notice-warning">
+
+                            <strong>Changes Requested</strong>
+
+                            <p style="margin-top: 8px;">
+
+                                The consultant has requested changes.
+
+                                AI can review the feedback and
+                                propose an updated bug fix.
+
+                            </p>
+
+                        </div>
+
+                        {% if bug.review_comment %}
+
+                            <div class="detail-section">
+
+                                <h3>Requested Improvements</h3>
+
+                                <div class="content-box">{{ bug.review_comment }}</div>
+
+                            </div>
+
+                        {% endif %}
+
+                        {% if task.ai_branch and task.pull_request_url %}
+
+                            <form method="POST"
+                                  action="{% url 'run_ai_bug' problem.id bug.id %}"
+                                  class="action-form ai-fix-form">
+
+                                {% csrf_token %}
+
+                                <button type="submit"
+                                        class="btn btn-primary">
+
+                                    Run AI Fix Again
+
+                                </button>
+
+                            </form>
+
+                        {% else %}
+
+                            <div class="notice notice-warning">
+
+                                The original task branch and
+                                pull request are required
+                                before running AI again.
+
+                            </div>
+
+                        {% endif %}
+
+                    {% endif %}
+
+                </div>
+
+            </aside>
+
+        </div>
+
+    </div>
+
+    <!-- Workflow JavaScript -->
+
+    <script>
+
+        // ==========================================
+        // AI FIX EXECUTION
+        // ==========================================
+
+        document.querySelectorAll(".ai-fix-form")
+            .forEach(function (form) {
+
+                form.addEventListener("submit", function (event) {
+
+                    // Prevent duplicate submissions.
+
+                    if (form.dataset.submitting === "true") {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+                    form.dataset.submitting = "true";
+
+                    // Show the processing indicator.
+
+                    const processingBox =
+                        document.getElementById("ai-processing");
+
+                    if (processingBox) {
+
+                        processingBox.hidden = false;
+
+                    }
+
+                    // Update the submitted button.
+
+                    const submitButton =
+                        form.querySelector("button[type='submit']");
+
+                    if (submitButton) {
+
+                        submitButton.textContent =
+                            "Processing AI Fix...";
+
+                    }
+
+                    // Disable workflow buttons during execution.
+
+                    document.querySelectorAll(".action-form button")
+                        .forEach(function (button) {
+
+                            button.disabled = true;
+
+                        });
+
+                });
+
+            });
+
+
+        // ==========================================
+        // HUMAN REVIEW VALIDATION
+        // ==========================================
+
+        const reviewForm =
+            document.getElementById("bug-review-form");
+
+        if (reviewForm) {
+
+            reviewForm.addEventListener("submit", function (event) {
+
+                // Prevent duplicate submissions.
+
+                if (reviewForm.dataset.submitting === "true") {
+
+                    event.preventDefault();
+
+                    return;
+
+                }
+
+                const submitButton = event.submitter;
+
+                const feedback =
+                    document.getElementById("review_comment");
+
+                // Require an explicit review action.
+
+                if (!submitButton) {
+
+                    event.preventDefault();
+
+                    alert(
+                        "Please select Approve Fix or Send Back."
+                    );
+
+                    return;
+
+                }
+
+                const action = submitButton.value;
+
+                // ==========================================
+                // APPROVE FIX
+                // ==========================================
+
+                if (action === "approve") {
+
+                    const confirmed = window.confirm(
+
+                        "Have you reviewed the pull request " +
+                        "and verified that the reported issue " +
+                        "has been fixed?\n\n" +
+                        "Approving will mark this bug as Resolved."
+
+                    );
+
+                    if (!confirmed) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+                }
+
+                // ==========================================
+                // SEND BACK
+                // ==========================================
+
+                else if (action === "send_back") {
+
+                    if (!feedback || !feedback.value.trim()) {
+
+                        event.preventDefault();
+
+                        alert(
+
+                            "Please provide feedback explaining " +
+                            "what AI needs to improve."
+
+                        );
+
+                        if (feedback) {
+
+                            feedback.focus();
+
+                        }
+
+                        return;
+
+                    }
+
+                    const confirmed = window.confirm(
+
+                        "Send this bug fix back to AI " +
+                        "for further improvements?"
+
+                    );
+
+                    if (!confirmed) {
+
+                        event.preventDefault();
+
+                        return;
+
+                    }
+
+                }
+
+                // Reject unknown actions.
+
+                else {
+
+                    event.preventDefault();
+
+                    alert("Invalid review action.");
+
+                    return;
+
+                }
+
+                // Preserve the selected action in a hidden input
+                // before disabling the submit buttons.
+
+                const actionInput =
+                    document.createElement("input");
+
+                actionInput.type = "hidden";
+                actionInput.name = "action";
+                actionInput.value = action;
+
+                reviewForm.appendChild(actionInput);
+
+                reviewForm.dataset.submitting = "true";
+
+                // Prevent additional button clicks.
+
+                reviewForm.querySelectorAll("button[type='submit']")
+                    .forEach(function (button) {
+
+                        button.disabled = true;
+
+                    });
+
+                // Display submission status.
+
+                if (action === "approve") {
+
+                    submitButton.textContent = "Approving Fix...";
+
+                }
+
+                else {
+
+                    submitButton.textContent = "Sending Back...";
+
+                }
+
+            });
+
+        }
+
+
+        // ==========================================
+        // RESTORE PAGE CONTROLS
+        // ==========================================
+
+        window.addEventListener("pageshow", function (event) {
+
+            if (event.persisted) {
+
+                window.location.reload();
+
+            }
+
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,4 +1,3 @@
-
 import os
 import base64
 import requests
@@ -126,29 +125,43 @@ def read_file(file_path, branch="main"):
     return content
 
 
-def create_branch(branch_name):
+def create_branch(branch_name, base_branch="main"):
+
     validate_ai_branch(branch_name)
+
+    # Allow only main or a valid AI branch as the source.
+    if base_branch != "main":
+        validate_ai_branch(base_branch)
+
+    if branch_name == base_branch:
+        raise ValueError(
+            "New branch and base branch must be different."
+        )
 
     headers = get_github_headers()
 
-    main_url = (
+    encoded_base = quote(base_branch, safe="/")
+
+    base_url = (
         f"{GITHUB_API_URL}/repos/"
-        f"{GITHUB_OWNER}/{GITHUB_REPO}/git/ref/heads/main"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+        f"git/ref/heads/{encoded_base}"
     )
 
-    main_response = requests.get(
-        main_url,
+    base_response = requests.get(
+        base_url,
         headers=headers,
         timeout=30,
     )
 
-    if not main_response.ok:
+    if not base_response.ok:
         raise Exception(
-            f"Could not read main branch: "
-            f"{main_response.status_code}: {main_response.text}"
+            f"Could not read base branch {base_branch}: "
+            f"{base_response.status_code}: "
+            f"{base_response.text}"
         )
 
-    main_sha = main_response.json()["object"]["sha"]
+    base_sha = base_response.json()["object"]["sha"]
 
     create_url = (
         f"{GITHUB_API_URL}/repos/"
@@ -160,7 +173,7 @@ def create_branch(branch_name):
         headers=headers,
         json={
             "ref": f"refs/heads/{branch_name}",
-            "sha": main_sha,
+            "sha": base_sha,
         },
         timeout=30,
     )
@@ -246,11 +259,27 @@ def commit_and_push(file_path, content, branch_name, commit_message):
         )
 
     return response.json()
-def open_pull_request(branch_name, title, body):
+def open_pull_request(
+    branch_name,
+    title,
+    body,
+    base_branch="main"
+):
+
     validate_ai_branch(branch_name)
 
+    if base_branch != "main":
+        validate_ai_branch(base_branch)
+
+    if branch_name == base_branch:
+        raise ValueError(
+            "Pull request head and base must be different."
+        )
+
     if not title or not title.strip():
-        raise ValueError("Pull request title is required.")
+        raise ValueError(
+            "Pull request title is required."
+        )
 
     headers = get_github_headers()
 
@@ -263,7 +292,7 @@ def open_pull_request(branch_name, title, body):
         "title": title,
         "body": body,
         "head": branch_name,
-        "base": "main",
+        "base": base_branch,
     }
 
     response = requests.post(

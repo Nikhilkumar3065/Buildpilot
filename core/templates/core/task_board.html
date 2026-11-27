@@ -1,5 +1,7 @@
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,6 +50,12 @@
             line-height: 1.6;
         }
 
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
         .back-link {
             text-decoration: none;
             background: #2563eb;
@@ -61,6 +69,24 @@
 
         .back-link:hover {
             background: #1d4ed8;
+        }
+
+        .bug-reports-link {
+            display: inline-block;
+            text-decoration: none;
+            background: white;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            padding: 11px 18px;
+            border-radius: 7px;
+            font-size: 14px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .bug-reports-link:hover {
+            background: #eff6ff;
+            border-color: #2563eb;
         }
 
         /* Django Messages */
@@ -77,6 +103,18 @@
             background: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
+        }
+
+        .alert-message.success {
+            background: #f0fdf4;
+            color: #166534;
+            border-color: #bbf7d0;
+        }
+
+        .alert-message.error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-color: #fecaca;
         }
 
         /* Board */
@@ -101,6 +139,7 @@
             justify-content: space-between;
             align-items: center;
             margin-bottom: 16px;
+            gap: 10px;
         }
 
         .column-header h2 {
@@ -158,6 +197,29 @@
             line-height: 1.6;
             color: #64748b;
             margin-bottom: 15px;
+        }
+
+        /* Report Bug Button */
+
+        .report-bug-button {
+            display: block;
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 15px;
+            text-align: center;
+            text-decoration: none;
+            border: 1px solid #bfdbfe;
+            border-radius: 7px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 13px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .report-bug-button:hover {
+            background: #dbeafe;
+            border-color: #2563eb;
         }
 
         /* Status Form */
@@ -272,6 +334,48 @@
             box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
         }
 
+        /* GitHub Information */
+
+        .github-info {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 7px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .github-info strong {
+            display: block;
+            color: #334155;
+            margin-bottom: 6px;
+        }
+
+        .branch-name {
+            display: block;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 7px;
+            border-radius: 5px;
+            font-size: 11px;
+            margin-bottom: 10px;
+            overflow-wrap: anywhere;
+        }
+
+        .github-link {
+            display: block;
+            margin-top: 8px;
+            color: #2563eb;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .github-link:hover {
+            text-decoration: underline;
+        }
+
         .empty-message {
             text-align: center;
             color: #94a3b8;
@@ -282,12 +386,15 @@
         /* Responsive */
 
         @media (max-width: 1000px) {
+
             .board {
                 grid-template-columns: repeat(2, minmax(250px, 1fr));
             }
+
         }
 
         @media (max-width: 650px) {
+
             body {
                 padding: 15px;
             }
@@ -300,12 +407,20 @@
                 font-size: 23px;
             }
 
-            .back-link {
+            .header-actions {
+                width: 100%;
+                flex-direction: column;
+            }
+
+            .back-link,
+            .bug-reports-link {
                 width: 100%;
                 text-align: center;
             }
+
         }
     </style>
+
 </head>
 
 <body>
@@ -317,6 +432,7 @@
         <div class="header">
 
             <div>
+
                 <h1>Project Task Board</h1>
 
                 <p>
@@ -324,12 +440,32 @@
                     |
                     {{ problem.description|truncatechars:90 }}
                 </p>
+
             </div>
 
-            <a href="{% url 'technical_plan' problem.id %}"
-               class="back-link">
-                Back to Technical Plan
-            </a>
+                <div class="header-actions">
+
+                    <a href="{% url 'bug_reports' problem.id %}"
+                    class="bug-reports-link">
+
+                        🐞 View Bug Reports
+
+                    </a>
+                        <a href="{% url 'project_skill' problem.id %}"
+                            class="bug-reports-link">
+
+                            Project Skill File
+
+                    </a>
+
+                    <a href="{% url 'technical_plan' problem.id %}"
+                    class="back-link">
+
+                        Back to Technical Plan
+
+                    </a>
+
+            </div>
 
         </div>
 
@@ -341,8 +477,10 @@
 
                 {% for message in messages %}
 
-                    <div class="alert-message">
+                    <div class="alert-message {{ message.tags }}">
+
                         {{ message }}
+
                     </div>
 
                 {% endfor %}
@@ -362,8 +500,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>Backlog</h2>
-                    <span class="column-label">Backlog</span>
+
+                    <span class="column-label">
+                        Backlog
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -379,6 +522,17 @@
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
+
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
+                            <!-- Update Status -->
 
                             <form method="POST" class="status-form">
 
@@ -431,8 +585,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>Ready for AI</h2>
-                    <span class="column-label">Ready</span>
+
+                    <span class="column-label">
+                        Ready
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -448,6 +607,17 @@
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
+
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
+                            <!-- Update Status -->
 
                             <form method="POST" class="status-form">
 
@@ -517,8 +687,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>AI Building</h2>
-                    <span class="column-label">Building</span>
+
+                    <span class="column-label">
+                        Building
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -534,6 +709,17 @@
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
+
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
+                            <!-- Update Status -->
 
                             <form method="POST" class="status-form">
 
@@ -586,8 +772,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>Needs Human Check</h2>
-                    <span class="column-label">Review</span>
+
+                    <span class="column-label">
+                        Review
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -604,9 +795,22 @@
 
                             <p>{{ task.description }}</p>
 
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
+                            <!-- Human Review Information -->
+
                             <div class="review-info">
 
-                                <strong>Human Review Required</strong>
+                                <strong>
+                                    Human Review Required
+                                </strong>
 
                                 <p>
                                     Review the AI-generated changes
@@ -615,6 +819,39 @@
                                 </p>
 
                             </div>
+
+                            <!-- GitHub Branch and Pull Request -->
+
+                            {% if task.ai_branch or task.pull_request_url %}
+
+                                <div class="github-info">
+
+                                    {% if task.ai_branch %}
+
+                                        <strong>AI Branch</strong>
+
+                                        <code class="branch-name">
+                                            {{ task.ai_branch }}
+                                        </code>
+
+                                    {% endif %}
+
+                                    {% if task.pull_request_url %}
+
+                                        <a href="{{ task.pull_request_url }}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="github-link">
+
+                                            View Pull Request ↗
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
 
                             <!-- Approve -->
 
@@ -689,8 +926,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>Done</h2>
-                    <span class="column-label">Completed</span>
+
+                    <span class="column-label">
+                        Completed
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -707,12 +949,65 @@
 
                             <p>{{ task.description }}</p>
 
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
+                            <!-- Human Approval -->
+
                             <div class="review-info"
                                  style="background: #dcfce7; color: #166534;">
 
                                 ✓ Approved by human reviewer
 
+                                {% if task.reviewed_at %}
+
+                                    <p>
+                                        Approved:
+                                        {{ task.reviewed_at|date:"d M Y, h:i A" }}
+                                    </p>
+
+                                {% endif %}
+
                             </div>
+
+                            <!-- GitHub Information -->
+
+                            {% if task.ai_branch or task.pull_request_url %}
+
+                                <div class="github-info">
+
+                                    {% if task.ai_branch %}
+
+                                        <strong>AI Branch</strong>
+
+                                        <code class="branch-name">
+                                            {{ task.ai_branch }}
+                                        </code>
+
+                                    {% endif %}
+
+                                    {% if task.pull_request_url %}
+
+                                        <a href="{{ task.pull_request_url }}"
+                                           target="_blank"
+                                           rel="noopener noreferrer"
+                                           class="github-link">
+
+                                            View Pull Request ↗
+
+                                        </a>
+
+                                    {% endif %}
+
+                                </div>
+
+                            {% endif %}
 
                         </div>
 
@@ -729,8 +1024,13 @@
             <div class="column">
 
                 <div class="column-header">
+
                     <h2>Sent Back</h2>
-                    <span class="column-label">Rework</span>
+
+                    <span class="column-label">
+                        Rework
+                    </span>
+
                 </div>
 
                 {% for task in tasks %}
@@ -747,6 +1047,15 @@
 
                             <p>{{ task.description }}</p>
 
+                            <!-- Report Bug -->
+
+                            <a href="{% url 'report_bug' problem.id task.id %}"
+                               class="report-bug-button">
+
+                                🐞 Report Bug
+
+                            </a>
+
                             <!-- Human Review Feedback -->
 
                             {% if task.review_comment %}
@@ -754,7 +1063,9 @@
                                 <div class="review-info"
                                      style="background: #fef2f2; color: #991b1b;">
 
-                                    <strong>Human Review Feedback</strong>
+                                    <strong>
+                                        Human Review Feedback
+                                    </strong>
 
                                     <p>
                                         {{ task.review_comment }}
@@ -777,45 +1088,39 @@
 
                             {% if task.ai_branch and task.pull_request_url %}
 
+                                <div class="github-info">
+
+                                    <strong>Existing AI Branch</strong>
+
+                                    <code class="branch-name">
+                                        {{ task.ai_branch }}
+                                    </code>
+
+                                    <a href="{{ task.pull_request_url }}"
+                                       target="_blank"
+                                       rel="noopener noreferrer"
+                                       class="github-link">
+
+                                        View Existing Pull Request ↗
+
+                                    </a>
+
+                                </div>
+
                                 <form method="POST"
-                                      action="{% url 'run_ai_task' problem.id task.id %}">
+                                      action="{% url 'run_ai_task' problem.id task.id %}"
+                                      class="run-ai-form">
 
                                     {% csrf_token %}
 
-                                    <button
-                                        type="submit"
-                                        style="
-                                            width: 100%;
-                                            padding: 12px;
-                                            margin-top: 12px;
-                                            background: #2563eb;
-                                            color: white;
-                                            border: none;
-                                            border-radius: 8px;
-                                            font-weight: 600;
-                                            cursor: pointer;
-                                        ">
+                                    <button type="submit"
+                                            class="run-ai-button">
 
                                         🤖 Re-run AI with Feedback
 
                                     </button>
 
                                 </form>
-
-                                <a href="{{ task.pull_request_url }}"
-                                   target="_blank"
-                                   rel="noopener noreferrer"
-                                   style="
-                                       display: block;
-                                       margin-top: 10px;
-                                       color: #2563eb;
-                                       text-decoration: none;
-                                       font-size: 13px;
-                                   ">
-
-                                    View Existing Pull Request ↗
-
-                                </a>
 
                             {% else %}
 
@@ -830,7 +1135,9 @@
 
                             <!-- Update Task Status -->
 
-                            <form method="POST" class="status-form">
+                            <form method="POST"
+                                  class="status-form"
+                                  style="margin-top: 15px;">
 
                                 {% csrf_token %}
 
@@ -879,4 +1186,5 @@
     </div>
 
 </body>
+
 </html>

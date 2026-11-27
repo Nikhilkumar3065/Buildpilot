@@ -278,3 +278,121 @@ class Task(models.Model):
 
     def __str__(self):
         return self.title
+
+# Bug Reports
+class BugReport(models.Model):
+
+    STATUS_CHOICES = [
+        ('reported', 'Reported'),
+        ('ready_ai', 'Ready for AI'),
+        ('ai_fixing', 'AI Fixing'),
+        ('needs_human_check', 'Needs Human Check'),
+        ('resolved', 'Resolved'),
+        ('sent_back', 'Sent Back'),
+    ]
+
+    workspace = models.ForeignKey(
+        Workspace,
+        on_delete=models.CASCADE,
+        related_name='bug_reports'
+    )
+
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='bug_reports'
+    )
+
+    title = models.CharField(
+        max_length=200
+    )
+
+    steps_to_reproduce = models.TextField()
+
+    expected_behavior = models.TextField()
+
+    actual_behavior = models.TextField()
+
+    status = models.CharField(
+        max_length=30,
+        choices=STATUS_CHOICES,
+        default='reported'
+    )
+
+    # AI-generated bug diagnosis
+    ai_diagnosis = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    # AI-generated bug fix branch
+    ai_branch = models.CharField(
+        max_length=255,
+        blank=True,
+        default=''
+    )
+
+    # GitHub pull request for the bug fix
+    pull_request_url = models.URLField(
+        blank=True,
+        default=''
+    )
+
+    # Human review feedback
+    review_comment = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    # Lesson learned from the bug
+    lesson = models.TextField(
+        blank=True,
+        default=''
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    resolved_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.title
+class ProjectSkill(models.Model):
+
+    workspace = models.ForeignKey(
+        Workspace,
+        on_delete=models.CASCADE,
+        related_name="project_skills"
+    )
+
+    problem = models.OneToOneField(
+        Problem,
+        on_delete=models.CASCADE,
+        related_name="project_skill"
+    )
+
+    content = models.TextField(
+        blank=True,
+        default=""
+    )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
+
+    class Meta:
+        ordering = ["-updated_at"]
+
+    def __str__(self):
+        return f"Project Skill - {self.problem_id}"

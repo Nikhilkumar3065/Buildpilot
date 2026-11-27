@@ -3,7 +3,8 @@ from .models import (
     Client,
     Problem,
     RequirementVersion,
-    TechnicalPlan
+    TechnicalPlan,
+    BugReport
 )
 
 
@@ -56,4 +57,49 @@ class TechnicalPlanForm(forms.ModelForm):
                 'rows': 20,
                 'placeholder': 'Review and edit the technical plan...'
             })
+        }
+
+class BugReportForm(forms.ModelForm):
+
+    class Meta:
+        model = BugReport
+
+        fields = [
+            'title',
+            'steps_to_reproduce',
+            'expected_behavior',
+            'actual_behavior',
+        ]
+
+        labels = {
+            'title': 'Bug Title',
+            'steps_to_reproduce': 'Steps to Reproduce',
+            'expected_behavior': 'Expected Behavior',
+            'actual_behavior': 'Actual Behavior',
+        }
+
+        widgets = {
+            'title': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Enter a short bug title',
+                'maxlength': 200,
+            }),
+
+            'steps_to_reproduce': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Describe the steps to reproduce the bug...',
+            }),
+
+            'expected_behavior': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe what should happen...',
+            }),
+
+            'actual_behavior': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 4,
+                'placeholder': 'Describe what actually happens...',
+            }),
         }

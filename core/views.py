@@ -2,14 +2,26 @@ import json
 import markdown
 import bleach
 from django.contrib.admin import action
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.db import transaction
+from django.http import HttpResponse
 from django.contrib.auth.decorators import login_required
 from urllib3 import request
 from .ai_tools import TOOLS
-from .forms import ClientForm, ProblemForm,RequirementForm,TechnicalPlanForm
+from .skill_service import save_bug_lesson,get_project_skill,get_project_lessons
+import requests
+from urllib.parse import urlparse
+from uuid import uuid4
+from .github_service import (
+    GITHUB_API_URL,
+    GITHUB_OWNER,
+    GITHUB_REPO,
+    get_github_headers,
+    validate_ai_branch,
+)
+from .forms import ClientForm, ProblemForm,RequirementForm,TechnicalPlanForm,BugReportForm
 from .models import (
     Client,
     Problem,
@@ -21,10 +33,12 @@ from .models import (
     RequirementVersion,
     RequirementDocument,
     TechnicalPlan,
-    Task
+    Task,
+    BugReport,
+    ProjectSkill
 )
 
-from .ai_service import ( get_ai_response,generate_technical_plan,generate_tasks_from_plan,run_ai_build)
+from .ai_service import ( get_ai_response,generate_technical_plan,generate_tasks_from_plan,run_ai_build,run_ai_bug_fix)
 from django.utils import timezone
 from django.contrib import messages
 from django.views.decorators.http import require_POST
@@ -1208,3 +1222,1015 @@ Follow this order:
         'task_board',
         problem_id=problem.id
     )
+
+# ==========================================
+# BUG REPORTING SYSTEM
+# ==========================================
+
+
+# Get the current user's workspace
+def get_bug_workspace(request):
+
+    membership = WorkspaceMember.objects.filter(
+        user=request.user
+    ).select_related('workspace').first()
+
+    if not membership:
+        return None
+
+    return membership.workspace
+
+
+# Find a bug belonging to the current workspace
+# and the specified project.
+def get_workspace_bug(workspace, problem, bug_id):
+
+    return get_object_or_404(
+        BugReport.objects.select_related(
+            'task',
+            'task__technical_plan'
+        ),
+        id=bug_id,
+        workspace=workspace,
+        task__workspace=workspace,
+        task__technical_plan__workspace=workspace,
+        task__technical_plan__problem=problem
+    )
+
+
+# ==========================================
+# CREATE BUG REPORT
+# ==========================================
+
+@login_required
+def report_bug(request, problem_id, task_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect('signup')
+
+    # Validate project ownership.
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    # Validate task ownership and project association.
+    task = get_object_or_404(
+        Task.objects.select_related('technical_plan'),
+        id=task_id,
+        workspace=workspace,
+        technical_plan__workspace=workspace,
+        technical_plan__problem=problem,
+        technical_plan__status='approved'
+    )
+
+    if request.method == 'POST':
+
+        form = BugReportForm(request.POST)
+
+        if form.is_valid():
+
+            bug = form.save(commit=False)
+
+            # Assign protected fields on the server.
+            bug.workspace = workspace
+            bug.task = task
+            bug.status = 'reported'
+
+            bug.save()
+
+            messages.success(
+                request,
+                "Bug reported successfully!"
+            )
+
+            return redirect(
+                'bug_detail',
+                problem_id=problem.id,
+                bug_id=bug.id
+            )
+
+    else:
+
+        form = BugReportForm()
+
+    return render(
+        request,
+        'core/report_bug.html',
+        {
+            'workspace': workspace,
+            'problem': problem,
+            'task': task,
+            'form': form,
+        }
+    )
+
+
+# ==========================================
+# DISPLAY PROJECT BUG REPORTS
+# ==========================================
+
+@login_required
+def bug_reports(request, problem_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect('signup')
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    bugs = BugReport.objects.filter(
+        workspace=workspace,
+        task__workspace=workspace,
+        task__technical_plan__workspace=workspace,
+        task__technical_plan__problem=problem
+    ).select_related(
+        'task'
+    ).order_by('-created_at')
+
+    # Bug statistics
+    total_bugs = bugs.count()
+
+    reported_bugs = bugs.filter(
+        status='reported'
+    ).count()
+
+    ready_bugs = bugs.filter(
+        status='ready_ai'
+    ).count()
+
+    fixing_bugs = bugs.filter(
+        status='ai_fixing'
+    ).count()
+
+    review_bugs = bugs.filter(
+        status='needs_human_check'
+    ).count()
+
+    resolved_bugs = bugs.filter(
+        status='resolved'
+    ).count()
+
+    sent_back_bugs = bugs.filter(
+        status='sent_back'
+    ).count()
+
+    return render(
+        request,
+        'core/bug_reports.html',
+        {
+            'workspace': workspace,
+            'problem': problem,
+            'bugs': bugs,
+            'total_bugs': total_bugs,
+            'reported_bugs': reported_bugs,
+            'ready_bugs': ready_bugs,
+            'fixing_bugs': fixing_bugs,
+            'review_bugs': review_bugs,
+            'resolved_bugs': resolved_bugs,
+            'sent_back_bugs': sent_back_bugs,
+        }
+    )
+
+
+# ==========================================
+# DISPLAY INDIVIDUAL BUG DETAILS
+# ==========================================
+
+@login_required
+def bug_detail(request, problem_id, bug_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect('signup')
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    bug = get_workspace_bug(
+        workspace,
+        problem,
+        bug_id
+    )
+
+    return render(
+        request,
+        'core/bug_detail.html',
+        {
+            'workspace': workspace,
+            'problem': problem,
+            'bug': bug,
+            'task': bug.task,
+        }
+    )
+
+
+# ==========================================
+# UPDATE BUG STATUS
+# ==========================================
+
+@login_required
+@require_POST
+def update_bug_status(request, problem_id, bug_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect('signup')
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    bug = get_workspace_bug(
+        workspace,
+        problem,
+        bug_id
+    )
+
+    action = request.POST.get('action', '')
+
+    # Consultant prepares a reported bug for AI fixing.
+    if action == 'ready_ai':
+
+        updated = BugReport.objects.filter(
+            id=bug.id,
+            workspace=workspace,
+            status='reported'
+        ).update(
+            status='ready_ai'
+        )
+
+        if updated:
+
+            messages.success(
+                request,
+                "Bug is now ready for AI fixing."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                "Only newly reported bugs can be "
+                "marked Ready for AI."
+            )
+
+    # Consultant returns an unstarted bug to Reported.
+    elif action == 'reported':
+
+        updated = BugReport.objects.filter(
+            id=bug.id,
+            workspace=workspace,
+            status='ready_ai'
+        ).update(
+            status='reported'
+        )
+
+        if updated:
+
+            messages.success(
+                request,
+                "Bug moved back to Reported."
+            )
+
+        else:
+
+            messages.error(
+                request,
+                "Only bugs waiting for AI can be "
+                "moved back to Reported."
+            )
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid bug status action."
+        )
+
+    return redirect(
+        'bug_detail',
+        problem_id=problem.id,
+        bug_id=bug.id
+    )
+
+
+@login_required
+@require_POST
+def run_ai_bug(request, problem_id, bug_id):
+
+    # ==========================================
+    # WORKSPACE VALIDATION
+    # ==========================================
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect("signup")
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    bug = get_workspace_bug(
+        workspace,
+        problem,
+        bug_id
+    )
+
+    # ==========================================
+    # STATUS VALIDATION
+    # ==========================================
+
+    if bug.status not in {
+        "ready_ai",
+        "sent_back"
+    }:
+
+        messages.error(
+            request,
+            "Only bugs marked Ready for AI or "
+            "Sent Back can be processed."
+        )
+
+        return redirect(
+            "bug_detail",
+            problem_id=problem.id,
+            bug_id=bug.id
+        )
+
+    previous_status = bug.status
+
+    # ==========================================
+    # VALIDATE RELATED TASK
+    # ==========================================
+
+    if bug.task.technical_plan.status != "approved":
+
+        messages.error(
+            request,
+            "The related technical plan must be approved."
+        )
+
+        return redirect(
+            "bug_detail",
+            problem_id=problem.id,
+            bug_id=bug.id
+        )
+
+    if not bug.task.ai_branch or not bug.task.pull_request_url:
+
+        messages.error(
+            request,
+            "The related task must have a GitHub "
+            "branch and pull request before AI can fix it."
+        )
+
+        return redirect(
+            "bug_detail",
+            problem_id=problem.id,
+            bug_id=bug.id
+        )
+
+    # ==========================================
+    # PREVENT DUPLICATE EXECUTION
+    # ==========================================
+
+    updated = BugReport.objects.filter(
+        id=bug.id,
+        workspace=workspace,
+        status=previous_status
+    ).update(
+        status="ai_fixing"
+    )
+
+    if not updated:
+
+        messages.error(
+            request,
+            "This bug is already being processed "
+            "or its status has changed."
+        )
+
+        return redirect(
+            "bug_detail",
+            problem_id=problem.id,
+            bug_id=bug.id
+        )
+
+    bug.refresh_from_db()
+
+    # ==========================================
+    # CREATE UNIQUE BUG FIX BRANCH NAME
+    # ==========================================
+
+    timestamp = timezone.now().strftime(
+        "%Y%m%d%H%M%S"
+    )
+
+    unique_suffix = uuid4().hex[:8]
+
+    branch_name = (
+        f"ai/bug-{bug.id}-"
+        f"{timestamp}-{unique_suffix}"
+    )
+
+    try:
+
+        # ==========================================
+        # DETERMINE AUTHORIZED BASE BRANCH
+        # ==========================================
+
+        base_branch = get_bug_base_branch(
+            bug.task
+        )
+
+        # ==========================================
+        # LOAD PROJECT SKILL FILE
+        # ==========================================
+
+        project_lessons = get_project_lessons(
+            workspace=workspace,
+            problem=problem
+        )
+
+        # ==========================================
+        # EXECUTE AI BUG FIX
+        # ==========================================
+
+        result = run_ai_bug_fix(
+            bug=bug,
+            branch_name=branch_name,
+            base_branch=base_branch,
+            project_lessons=project_lessons,
+            max_tool_calls=20
+        )
+
+        # ==========================================
+        # VALIDATE EXECUTION RESULT
+        # ==========================================
+
+        if not result.get("success"):
+
+            raise RuntimeError(
+                "AI bug fixing was not successful."
+            )
+
+        pull_request_url = result.get(
+            "pull_request_url",
+            ""
+        )
+
+        if not pull_request_url:
+
+            raise RuntimeError(
+                "AI did not create a valid pull request."
+            )
+
+        if result.get("branch_name") != branch_name:
+
+            raise RuntimeError(
+                "AI returned an unexpected branch."
+            )
+
+        if result.get("base_branch") != base_branch:
+
+            raise RuntimeError(
+                "AI returned an unexpected base branch."
+            )
+
+        # ==========================================
+        # PREPARE DIAGNOSIS AND CHANGED FILES
+        # ==========================================
+
+        diagnosis = result.get(
+            "diagnosis",
+            ""
+        )
+
+        changed_files = result.get(
+            "changed_files",
+            []
+        )
+
+        if changed_files:
+
+            diagnosis += "\n\nFiles Changed:\n"
+
+            diagnosis += "\n".join(
+                f"- {file_path}"
+                for file_path in changed_files
+            )
+
+        diagnosis += (
+            f"\n\nBase Branch: {base_branch}"
+        )
+
+        diagnosis += (
+            "\n\nTesting Status: "
+            "Human verification required."
+        )
+
+        summary_warning = result.get(
+            "summary_warning",
+            ""
+        )
+
+        if summary_warning:
+
+            diagnosis += (
+                f"\n\nWarning: {summary_warning}"
+            )
+
+        # ==========================================
+        # SAVE AI RESULTS
+        # ==========================================
+
+        saved = BugReport.objects.filter(
+            id=bug.id,
+            workspace=workspace,
+            status="ai_fixing"
+        ).update(
+            ai_diagnosis=diagnosis,
+            ai_branch=branch_name,
+            pull_request_url=pull_request_url,
+            lesson=result.get("lesson", ""),
+            status="needs_human_check",
+            resolved_at=None
+        )
+
+        if not saved:
+
+            raise RuntimeError(
+                "Bug status changed before results "
+                "could be saved."
+            )
+
+        messages.success(
+            request,
+            "AI proposed a bug fix and created a "
+            "pull request. Human review is required."
+        )
+
+        if summary_warning:
+
+            messages.warning(
+                request,
+                summary_warning
+            )
+
+    except Exception as error:
+
+        # ==========================================
+        # RESTORE PREVIOUS STATUS ON FAILURE
+        # ==========================================
+
+        BugReport.objects.filter(
+            id=bug.id,
+            workspace=workspace,
+            status="ai_fixing"
+        ).update(
+            status=previous_status
+        )
+
+        print(
+            f"AI Bug Fix Error | Bug #{bug.id} | "
+            f"Branch: {branch_name} | "
+            f"{type(error).__name__}: {error}"
+        )
+
+        messages.error(
+            request,
+            "AI bug fixing could not be completed. "
+            "Check the server terminal and GitHub "
+            "repository before trying again."
+        )
+
+    return redirect(
+        "bug_detail",
+        problem_id=problem.id,
+        bug_id=bug.id
+    )
+
+def get_bug_base_branch(task):
+    """
+    Determine the correct base branch for a bug fix.
+
+    Merged task PR: use main.
+    Open task PR: use the original task branch.
+    """
+
+    if not task.ai_branch or not task.pull_request_url:
+        raise ValueError(
+            "The related task does not have a GitHub "
+            "branch and pull request."
+        )
+
+    if not GITHUB_OWNER or not GITHUB_REPO:
+        raise ValueError(
+            "GitHub repository configuration is missing."
+        )
+
+    validate_ai_branch(task.ai_branch)
+
+    parsed_url = urlparse(task.pull_request_url)
+
+    parts = parsed_url.path.strip("/").split("/")
+
+    if (
+        parsed_url.scheme != "https"
+        or parsed_url.netloc != "github.com"
+        or len(parts) != 4
+        or parts[0].lower() != GITHUB_OWNER.lower()
+        or parts[1].lower() != GITHUB_REPO.lower()
+        or parts[2] != "pull"
+        or not parts[3].isdigit()
+    ):
+        raise ValueError(
+            "The task pull request does not belong "
+            "to the configured demo repository."
+        )
+
+    pr_number = int(parts[3])
+
+    api_url = (
+        f"{GITHUB_API_URL}/repos/"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/pulls/{pr_number}"
+    )
+
+    response = requests.get(
+        api_url,
+        headers=get_github_headers(),
+        timeout=30
+    )
+
+    if not response.ok:
+        raise RuntimeError(
+            "Unable to verify the original task pull request."
+        )
+
+    pr_data = response.json()
+
+    head = pr_data.get("head") or {}
+    base = pr_data.get("base") or {}
+
+    head_repo = head.get("repo") or {}
+    base_repo = base.get("repo") or {}
+
+    expected_repo = (
+        f"{GITHUB_OWNER}/{GITHUB_REPO}".lower()
+    )
+
+    if (
+        head_repo.get("full_name", "").lower()
+        != expected_repo
+        or base_repo.get("full_name", "").lower()
+        != expected_repo
+    ):
+        raise ValueError(
+            "The pull request repository is not authorized."
+        )
+
+    if head.get("ref") != task.ai_branch:
+        raise ValueError(
+            "The pull request branch does not match "
+            "the related task branch."
+        )
+
+    if base.get("ref") != "main":
+        raise ValueError(
+            "The original task pull request must target main."
+        )
+
+    # If the original task was merged, fix main's code
+    # through a separate bug branch.
+
+    if pr_data.get("merged") is True:
+        return "main"
+
+    # If the original task is still open, fix its code
+    # through a separate branch based on that task.
+
+    if pr_data.get("state") == "open":
+        return task.ai_branch
+
+    raise ValueError(
+        "The original task pull request was closed "
+        "without merging. Bug fixing cannot continue."
+    )
+
+
+@login_required
+@require_POST
+def review_bug_fix(request, problem_id, bug_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect("signup")
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    bug = get_workspace_bug(
+        workspace,
+        problem,
+        bug_id
+    )
+
+    if bug.status != "needs_human_check":
+
+        messages.error(
+            request,
+            "Only bugs waiting for human review "
+            "can be approved or sent back."
+        )
+
+        return redirect(
+            "bug_detail",
+            problem_id=problem.id,
+            bug_id=bug.id
+        )
+
+    action = request.POST.get(
+        "action", ""
+    ).strip()
+
+    review_comment = request.POST.get(
+        "review_comment", ""
+    ).strip()
+
+    # ==========================================
+    # APPROVE BUG FIX
+    # ==========================================
+
+    if action == "approve":
+
+        if not bug.ai_branch or not bug.pull_request_url:
+
+            messages.error(
+                request,
+                "A fix branch and pull request "
+                "are required before approval."
+            )
+
+        else:
+
+            try:
+
+                with transaction.atomic():
+
+                    updated = BugReport.objects.filter(
+                        id=bug.id,
+                        workspace=workspace,
+                        status="needs_human_check"
+                    ).update(
+                        status="resolved",
+                        review_comment=review_comment,
+                        resolved_at=timezone.now()
+                    )
+
+                    if not updated:
+
+                        messages.error(
+                            request,
+                            "The bug status has already changed."
+                        )
+
+                    else:
+
+                        bug.refresh_from_db()
+
+                        lesson_saved = save_bug_lesson(bug)
+
+                        if lesson_saved:
+
+                            messages.success(
+                                request,
+                                "Bug fix approved successfully. "
+                                "The lesson has been saved to "
+                                "the project skill document."
+                            )
+
+                        else:
+
+                            messages.success(
+                                request,
+                                "Bug fix approved successfully. "
+                                "No new lesson was added."
+                            )
+
+            except Exception as error:
+
+                print(
+                    f"Bug Approval Error | "
+                    f"Bug #{bug.id} | "
+                    f"{type(error).__name__}"
+                )
+
+                messages.error(
+                    request,
+                    "Bug approval could not be completed. "
+                    "Please check the server terminal."
+                )
+
+    # ==========================================
+    # SEND BUG FIX BACK TO AI
+    # ==========================================
+
+    elif action == "send_back":
+
+        if not review_comment:
+
+            messages.error(
+                request,
+                "Please provide feedback explaining "
+                "what AI needs to improve."
+            )
+
+        else:
+
+            updated = BugReport.objects.filter(
+                id=bug.id,
+                workspace=workspace,
+                status="needs_human_check"
+            ).update(
+                status="sent_back",
+                review_comment=review_comment,
+                resolved_at=None
+            )
+
+            if updated:
+
+                messages.success(
+                    request,
+                    "Bug fix sent back successfully. "
+                    "AI can now review your feedback "
+                    "and attempt another fix."
+                )
+
+            else:
+
+                messages.error(
+                    request,
+                    "The bug status has already changed."
+                )
+
+    # ==========================================
+    # INVALID ACTION
+    # ==========================================
+
+    else:
+
+        messages.error(
+            request,
+            "Invalid bug review action."
+        )
+
+    return redirect(
+        "bug_detail",
+        problem_id=problem.id,
+        bug_id=bug.id
+    )
+
+@login_required
+def project_skill(request, problem_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect("signup")
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    skill = get_project_skill(
+        workspace=workspace,
+        problem=problem
+    )
+
+    if request.method == "POST":
+
+        content = request.POST.get("content", "").strip()
+
+        if not content:
+
+            messages.error(
+                request,
+                "The skill document cannot be empty."
+            )
+
+        elif len(content) > 50000:
+
+            messages.error(
+                request,
+                "The skill document is too large."
+            )
+
+        else:
+
+            with transaction.atomic():
+
+                skill = ProjectSkill.objects.select_for_update().get(
+                    id=skill.id,
+                    workspace=workspace,
+                    problem=problem
+                )
+
+                submitted_version = request.POST.get(
+                    "version", ""
+                )
+
+                if submitted_version != skill.updated_at.isoformat():
+
+                    messages.error(
+                        request,
+                        "The skill document has changed. "
+                        "Review the latest content before editing again."
+                    )
+
+                else:
+
+                    skill.content = content
+
+                    skill.save(
+                        update_fields=[
+                            "content",
+                            "updated_at"
+                        ]
+                    )
+
+                    messages.success(
+                        request,
+                        "Project skill file updated successfully."
+                    )
+
+        return redirect(
+            "project_skill",
+            problem_id=problem.id
+        )
+
+    return render(
+        request,
+        "core/project_skill.html",
+        {
+            "workspace": workspace,
+            "problem": problem,
+            "skill": skill,
+            "skill_version": skill.updated_at.isoformat()
+        }
+    )
+
+
+@login_required
+def download_project_skill(request, problem_id):
+
+    workspace = get_bug_workspace(request)
+
+    if not workspace:
+        return redirect("signup")
+
+    problem = get_object_or_404(
+        Problem,
+        id=problem_id,
+        workspace=workspace
+    )
+
+    skill = get_project_skill(
+        workspace=workspace,
+        problem=problem
+    )
+
+    response = HttpResponse(
+        skill.content,
+        content_type="text/markdown; charset=utf-8"
+    )
+
+    response["Content-Disposition"] = (
+        f'attachment; filename="project-{problem.id}-SKILL.md"'
+    )
+
+    return response
