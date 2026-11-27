@@ -83,4 +83,9 @@ urlpatterns = [
         views.download_project_skill,
         name='download_project_skill'
     ),
+        path(
+        'run-next-ai/<int:problem_id>/',
+        views.run_next_ai_task,
+        name='run_next_ai_task'
+    ),
 ]

@@ -3,12 +3,14 @@
 <html lang="en">
 
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Task Board | BuildPilot</title>
 
     <style>
+
         * {
             margin: 0;
             padding: 0;
@@ -27,7 +29,9 @@
             margin: auto;
         }
 
-        /* Header */
+        /* ==================================
+           HEADER
+        ================================== */
 
         .header {
             display: flex;
@@ -35,7 +39,7 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 25px;
         }
 
         .header h1 {
@@ -52,11 +56,13 @@
 
         .header-actions {
             display: flex;
+            align-items: center;
             flex-wrap: wrap;
             gap: 12px;
         }
 
         .back-link {
+            display: inline-block;
             text-decoration: none;
             background: #2563eb;
             color: white;
@@ -89,7 +95,9 @@
             border-color: #2563eb;
         }
 
-        /* Django Messages */
+        /* ==================================
+           DJANGO MESSAGES
+        ================================== */
 
         .django-messages {
             margin-bottom: 20px;
@@ -103,6 +111,7 @@
             background: #eff6ff;
             color: #1d4ed8;
             border: 1px solid #bfdbfe;
+            overflow-wrap: anywhere;
         }
 
         .alert-message.success {
@@ -117,11 +126,272 @@
             border-color: #fecaca;
         }
 
-        /* Board */
+        .alert-message.warning {
+            background: #fffbeb;
+            color: #92400e;
+            border-color: #fde68a;
+        }
+
+        .alert-message.info {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+
+        /* ==================================
+           AI EXECUTION PANEL
+        ================================== */
+
+        .execution-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            background: linear-gradient(
+                135deg,
+                #eff6ff,
+                #ffffff
+            );
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            box-shadow: 0 3px 10px
+                rgba(37, 99, 235, 0.05);
+        }
+
+        .execution-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .execution-content h2 {
+            font-size: 20px;
+            color: #172554;
+            margin-bottom: 8px;
+        }
+
+        .execution-content p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.7;
+        }
+
+        .execution-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            margin-top: 12px;
+            padding: 7px 11px;
+            background: #dbeafe;
+            color: #1d4ed8;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+        }
+
+        .execution-status.running {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .execution-status.idle {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .execution-status.ready {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .execution-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 240px;
+        }
+
+        .next-ai-form {
+            width: 100%;
+        }
+
+        .next-ai-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            width: 100%;
+            min-height: 46px;
+            padding: 13px 22px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #4f46e5
+            );
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 12px
+                rgba(37, 99, 235, 0.18);
+        }
+
+        .next-ai-button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            filter: brightness(0.95);
+        }
+
+        .next-ai-button:disabled {
+            background: #94a3b8;
+            color: #ffffff;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .execution-note {
+            font-size: 11px;
+            color: #64748b;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        /* ==================================
+           STATISTICS
+        ================================== */
+
+        .statistics-grid {
+            display: grid;
+            grid-template-columns:
+                repeat(6, minmax(0, 1fr));
+            gap: 14px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            padding: 18px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            background: white;
+            box-shadow: 0 2px 6px
+                rgba(15, 23, 42, 0.03);
+        }
+
+        .stat-card h3 {
+            font-size: 12px;
+            color: #64748b;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2563eb;
+        }
+
+        .stat-card.backlog-stat .stat-value {
+            color: #64748b;
+        }
+
+        .stat-card.building-stat .stat-value {
+            color: #d97706;
+        }
+
+        .stat-card.review-stat .stat-value {
+            color: #7c3aed;
+        }
+
+        .stat-card.done-stat .stat-value {
+            color: #16a34a;
+        }
+
+        .stat-card.sent-back-stat .stat-value {
+            color: #dc2626;
+        }
+
+        /* ==================================
+           LOADING INDICATOR
+        ================================== */
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            background: rgba(15, 23, 42, 0.48);
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            backdrop-filter: blur(3px);
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-card {
+            background: white;
+            width: 100%;
+            max-width: 430px;
+            padding: 35px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 20px 50px
+                rgba(15, 23, 42, 0.2);
+        }
+
+        .spinner {
+            width: 48px;
+            height: 48px;
+            margin: 0 auto 22px;
+            border: 5px solid #dbeafe;
+            border-top-color: #2563eb;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .loading-card h2 {
+            font-size: 21px;
+            color: #172554;
+            margin-bottom: 12px;
+        }
+
+        .loading-card p {
+            font-size: 14px;
+            line-height: 1.7;
+            color: #64748b;
+            margin-bottom: 14px;
+        }
+
+        .loading-note {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 7px;
+            padding: 12px;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        /* ==================================
+           TASK BOARD
+        ================================== */
 
         .board {
             display: grid;
-            grid-template-columns: repeat(3, minmax(250px, 1fr));
+            grid-template-columns:
+                repeat(3, minmax(250px, 1fr));
             gap: 20px;
             align-items: start;
         }
@@ -132,6 +402,7 @@
             border-radius: 12px;
             padding: 16px;
             min-height: 230px;
+            min-width: 0;
         }
 
         .column-header {
@@ -156,7 +427,9 @@
             color: #1d4ed8;
         }
 
-        /* Task Cards */
+        /* ==================================
+           TASK CARDS
+        ================================== */
 
         .task-card {
             background: #ffffff;
@@ -164,14 +437,16 @@
             border-radius: 10px;
             padding: 16px;
             margin-bottom: 13px;
-            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.04);
+            box-shadow: 0 3px 8px
+                rgba(15, 23, 42, 0.04);
             transition: 0.2s;
             overflow-wrap: anywhere;
         }
 
         .task-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 6px 14px
+                rgba(15, 23, 42, 0.08);
         }
 
         .task-number {
@@ -199,7 +474,28 @@
             margin-bottom: 15px;
         }
 
-        /* Report Bug Button */
+        .task-card.next-task {
+            border: 2px solid #2563eb;
+        }
+
+        .next-task-label {
+            display: none;
+            background: #dcfce7;
+            color: #166534;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 9px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .next-task .next-task-label {
+            display: inline-block;
+        }
+
+        /* ==================================
+           REPORT BUG BUTTON
+        ================================== */
 
         .report-bug-button {
             display: block;
@@ -222,7 +518,9 @@
             border-color: #2563eb;
         }
 
-        /* Status Form */
+        /* ==================================
+           STATUS FORM
+        ================================== */
 
         .status-form {
             border-top: 1px solid #edf0f5;
@@ -251,10 +549,18 @@
 
         .status-form select:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 2px
+                rgba(37, 99, 235, 0.1);
         }
 
-        /* Buttons */
+        .status-form select:disabled {
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        /* ==================================
+           BUTTONS
+        ================================== */
 
         .run-ai-form {
             margin-top: 12px;
@@ -262,10 +568,15 @@
 
         .run-ai-button {
             width: 100%;
+            min-height: 42px;
             padding: 11px 16px;
             border: none;
             border-radius: 8px;
-            background: linear-gradient(135deg, #2563eb, #4f46e5);
+            background: linear-gradient(
+                135deg,
+                #2563eb,
+                #4f46e5
+            );
             color: #ffffff;
             font-size: 14px;
             font-weight: 600;
@@ -273,10 +584,18 @@
             transition: all 0.3s ease;
         }
 
-        .run-ai-button:hover {
+        .run-ai-button:hover:not(:disabled) {
             filter: brightness(0.92);
             transform: translateY(-2px);
-            box-shadow: 0 5px 12px rgba(37, 99, 235, 0.18);
+            box-shadow: 0 5px 12px
+                rgba(37, 99, 235, 0.18);
+        }
+
+        .run-ai-button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
 
         .approve-button {
@@ -287,7 +606,9 @@
             background: #dc2626;
         }
 
-        /* Review Information */
+        /* ==================================
+           REVIEW INFORMATION
+        ================================== */
 
         .review-info {
             background: #eff6ff;
@@ -302,6 +623,21 @@
         .review-info p {
             margin-top: 8px;
             margin-bottom: 8px;
+        }
+
+        .review-info.approved {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .review-info.feedback {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+
+        .review-info.building {
+            background: #fffbeb;
+            color: #92400e;
         }
 
         .review-form {
@@ -331,10 +667,13 @@
 
         .review-form textarea:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+            box-shadow: 0 0 0 2px
+                rgba(37, 99, 235, 0.1);
         }
 
-        /* GitHub Information */
+        /* ==================================
+           GITHUB INFORMATION
+        ================================== */
 
         .github-info {
             background: #f8fafc;
@@ -376,6 +715,16 @@
             text-decoration: underline;
         }
 
+        .warning-text {
+            background: #fef2f2;
+            color: #b91c1c;
+            border-radius: 7px;
+            padding: 10px;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+
         .empty-message {
             text-align: center;
             color: #94a3b8;
@@ -383,12 +732,49 @@
             padding: 25px 10px;
         }
 
-        /* Responsive */
+        .refresh-button {
+            display: inline-block;
+            text-decoration: none;
+            color: #2563eb;
+            background: #ffffff;
+            border: 1px solid #bfdbfe;
+            border-radius: 7px;
+            padding: 9px 12px;
+            font-size: 12px;
+            font-weight: 600;
+            text-align: center;
+        }
+
+        .refresh-button:hover {
+            background: #eff6ff;
+        }
+
+        button:focus-visible,
+        a:focus-visible,
+        select:focus-visible,
+        textarea:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+        }
+
+        /* ==================================
+           RESPONSIVE DESIGN
+        ================================== */
+
+        @media (max-width: 1100px) {
+
+            .statistics-grid {
+                grid-template-columns:
+                    repeat(3, minmax(0, 1fr));
+            }
+
+        }
 
         @media (max-width: 1000px) {
 
             .board {
-                grid-template-columns: repeat(2, minmax(250px, 1fr));
+                grid-template-columns:
+                    repeat(2, minmax(250px, 1fr));
             }
 
         }
@@ -418,7 +804,48 @@
                 text-align: center;
             }
 
+            .execution-panel {
+                padding: 18px;
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .execution-actions {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .statistics-grid {
+                grid-template-columns:
+                    repeat(2, minmax(0, 1fr));
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 14px;
+            }
+
+            .stat-card .stat-value {
+                font-size: 24px;
+            }
+
+            .loading-card {
+                padding: 25px;
+            }
+
         }
+
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+
+        }
+
     </style>
 
 </head>
@@ -427,7 +854,9 @@
 
     <div class="container">
 
-        <!-- Page Header -->
+        <!-- ==================================
+             PAGE HEADER
+        ================================== -->
 
         <div class="header">
 
@@ -443,33 +872,36 @@
 
             </div>
 
-                <div class="header-actions">
+            <div class="header-actions">
 
-                    <a href="{% url 'bug_reports' problem.id %}"
-                    class="bug-reports-link">
+                <a href="{% url 'bug_reports' problem.id %}"
+                   class="bug-reports-link">
 
-                        🐞 View Bug Reports
+                    🐞 View Bug Reports
 
-                    </a>
-                        <a href="{% url 'project_skill' problem.id %}"
-                            class="bug-reports-link">
+                </a>
 
-                            Project Skill File
+                <a href="{% url 'project_skill' problem.id %}"
+                   class="bug-reports-link">
 
-                    </a>
+                    Project Skill File
 
-                    <a href="{% url 'technical_plan' problem.id %}"
-                    class="back-link">
+                </a>
 
-                        Back to Technical Plan
+                <a href="{% url 'technical_plan' problem.id %}"
+                   class="back-link">
 
-                    </a>
+                    Back to Technical Plan
+
+                </a>
 
             </div>
 
         </div>
 
-        <!-- Django Messages -->
+        <!-- ==================================
+             DJANGO MESSAGES
+        ================================== -->
 
         {% if messages %}
 
@@ -477,7 +909,8 @@
 
                 {% for message in messages %}
 
-                    <div class="alert-message {{ message.tags }}">
+                    <div class="alert-message {{ message.tags }}"
+                         role="status">
 
                         {{ message }}
 
@@ -489,15 +922,156 @@
 
         {% endif %}
 
-        <!-- Task Board Columns -->
+        <!-- ==================================
+             AI EXECUTION PANEL
+        ================================== -->
+
+        <div class="execution-panel">
+
+            <div class="execution-content">
+
+                <h2>🤖 AI Development Runner</h2>
+
+                <p>
+                    Automatically select and execute the next
+                    Ready for AI task in development order.
+                    Generated changes will be submitted for
+                    human review.
+                </p>
+
+                <div id="executionStatus"
+                     class="execution-status idle"
+                     role="status"
+                     aria-live="polite">
+
+                    Checking task availability...
+
+                </div>
+
+            </div>
+
+            <div class="execution-actions">
+
+                <form method="POST"
+                      action="{% url 'run_next_ai_task' problem.id %}"
+                      class="next-ai-form ai-execution-form"
+                      id="nextAiForm"
+                      data-loading-message="Selecting and executing the next Ready for AI task.">
+
+                    {% csrf_token %}
+
+                    <button type="submit"
+                            class="next-ai-button"
+                            id="nextAiButton"
+                            disabled>
+
+                        ▶ Run Next AI Task
+
+                    </button>
+
+                </form>
+
+                <span class="execution-note"
+                      id="executionNote">
+
+                    Tasks are selected in development order.
+
+                </span>
+
+                <a href="{% url 'task_board' problem.id %}"
+                   class="refresh-button">
+
+                    ↻ Refresh Task Board
+
+                </a>
+
+                <noscript>
+
+                    <p class="warning-text">
+                        Enable JavaScript to use the
+                        Run Next AI Task button.
+                    </p>
+
+                </noscript>
+
+            </div>
+
+        </div>
+
+        <!-- ==================================
+             TASK STATISTICS
+        ================================== -->
+
+        <div class="statistics-grid">
+
+            <div class="stat-card backlog-stat">
+
+                <h3>Backlog</h3>
+
+                <div class="stat-value"
+                     id="backlogCount">—</div>
+
+            </div>
+
+            <div class="stat-card">
+
+                <h3>Ready for AI</h3>
+
+                <div class="stat-value"
+                     id="readyCount">—</div>
+
+            </div>
+
+            <div class="stat-card building-stat">
+
+                <h3>AI Building</h3>
+
+                <div class="stat-value"
+                     id="buildingCount">—</div>
+
+            </div>
+
+            <div class="stat-card review-stat">
+
+                <h3>Needs Human Check</h3>
+
+                <div class="stat-value"
+                     id="reviewCount">—</div>
+
+            </div>
+
+            <div class="stat-card done-stat">
+
+                <h3>Done</h3>
+
+                <div class="stat-value"
+                     id="doneCount">—</div>
+
+            </div>
+
+            <div class="stat-card sent-back-stat">
+
+                <h3>Sent Back</h3>
+
+                <div class="stat-value"
+                     id="sentBackCount">—</div>
+
+            </div>
+
+        </div>
+
+        <!-- ==================================
+             TASK BOARD
+        ================================== -->
 
         <div class="board">
 
-            <!-- ========================= -->
-            <!-- Backlog Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 BACKLOG COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="backlog">
 
                 <div class="column-header">
 
@@ -513,17 +1087,20 @@
 
                     {% if task.status == 'backlog' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="backlog"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -532,9 +1109,8 @@
 
                             </a>
 
-                            <!-- Update Status -->
-
-                            <form method="POST" class="status-form">
+                            <form method="POST"
+                                  class="status-form">
 
                                 {% csrf_token %}
 
@@ -546,25 +1122,28 @@
                                        name="action"
                                        value="update_status">
 
-                                <label>Update Status</label>
+                                <label for="status-{{ task.id }}">
+
+                                    Update Status
+
+                                </label>
 
                                 <select name="status"
-                                        onchange="this.form.submit()">
+                                        id="status-{{ task.id }}"
+                                        onchange="this.form.requestSubmit()">
 
-                                    {% for value, label in status_choices %}
+                                    <option value="backlog"
+                                            selected>
 
-                                        {% if value != 'done' and value != 'sent_back' %}
+                                        Backlog
 
-                                            <option value="{{ value }}"
-                                                {% if task.status == value %}selected{% endif %}>
+                                    </option>
 
-                                                {{ label }}
+                                    <option value="ready_ai">
 
-                                            </option>
+                                        Ready for AI
 
-                                        {% endif %}
-
-                                    {% endfor %}
+                                    </option>
 
                                 </select>
 
@@ -578,18 +1157,21 @@
 
             </div>
 
-            <!-- ========================= -->
-            <!-- Ready for AI Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 READY FOR AI COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="ready_ai">
 
                 <div class="column-header">
 
                     <h2>Ready for AI</h2>
 
                     <span class="column-label">
+
                         Ready
+
                     </span>
 
                 </div>
@@ -598,17 +1180,26 @@
 
                     {% if task.status == 'ready_ai' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="ready_ai"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
+                            </span>
+
+                            <span class="next-task-label">
+
+                                Next Eligible Task
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -617,9 +1208,8 @@
 
                             </a>
 
-                            <!-- Update Status -->
-
-                            <form method="POST" class="status-form">
+                            <form method="POST"
+                                  class="status-form">
 
                                 {% csrf_token %}
 
@@ -631,40 +1221,42 @@
                                        name="action"
                                        value="update_status">
 
-                                <label>Update Status</label>
+                                <label for="status-{{ task.id }}">
+
+                                    Update Status
+
+                                </label>
 
                                 <select name="status"
-                                        onchange="this.form.submit()">
+                                        id="status-{{ task.id }}"
+                                        onchange="this.form.requestSubmit()">
 
-                                    {% for value, label in status_choices %}
+                                    <option value="backlog">
 
-                                        {% if value != 'done' and value != 'sent_back' %}
+                                        Backlog
 
-                                            <option value="{{ value }}"
-                                                {% if task.status == value %}selected{% endif %}>
+                                    </option>
 
-                                                {{ label }}
+                                    <option value="ready_ai"
+                                            selected>
 
-                                            </option>
+                                        Ready for AI
 
-                                        {% endif %}
-
-                                    {% endfor %}
+                                    </option>
 
                                 </select>
 
                             </form>
 
-                            <!-- Run AI -->
-
                             <form method="POST"
                                   action="{% url 'run_ai_task' problem.id task.id %}"
-                                  class="run-ai-form">
+                                  class="run-ai-form ai-execution-form"
+                                  data-loading-message="AI is implementing the selected development task.">
 
                                 {% csrf_token %}
 
                                 <button type="submit"
-                                        class="run-ai-button">
+                                        class="run-ai-button ai-execution-button">
 
                                     🤖 Run AI
 
@@ -680,18 +1272,21 @@
 
             </div>
 
-            <!-- ========================= -->
-            <!-- AI Building Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 AI BUILDING COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="ai_building">
 
                 <div class="column-header">
 
                     <h2>AI Building</h2>
 
                     <span class="column-label">
+
                         Building
+
                     </span>
 
                 </div>
@@ -700,17 +1295,20 @@
 
                     {% if task.status == 'ai_building' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="ai_building"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -719,43 +1317,30 @@
 
                             </a>
 
-                            <!-- Update Status -->
+                            <div class="review-info building">
 
-                            <form method="POST" class="status-form">
+                                <strong>
 
-                                {% csrf_token %}
+                                    AI Execution In Progress
 
-                                <input type="hidden"
-                                       name="task_id"
-                                       value="{{ task.id }}">
+                                </strong>
 
-                                <input type="hidden"
-                                       name="action"
-                                       value="update_status">
+                                <p>
 
-                                <label>Update Status</label>
+                                    BuildPilot is processing this
+                                    development task. Refresh the
+                                    board to check its latest status.
 
-                                <select name="status"
-                                        onchange="this.form.submit()">
+                                </p>
 
-                                    {% for value, label in status_choices %}
+                            </div>
 
-                                        {% if value != 'done' and value != 'sent_back' %}
+                            <a href="{% url 'task_board' problem.id %}"
+                               class="refresh-button">
 
-                                            <option value="{{ value }}"
-                                                {% if task.status == value %}selected{% endif %}>
+                                ↻ Refresh Status
 
-                                                {{ label }}
-
-                                            </option>
-
-                                        {% endif %}
-
-                                    {% endfor %}
-
-                                </select>
-
-                            </form>
+                            </a>
 
                         </div>
 
@@ -765,18 +1350,21 @@
 
             </div>
 
-            <!-- ========================= -->
-            <!-- Needs Human Check Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 NEEDS HUMAN CHECK COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="needs_human_check">
 
                 <div class="column-header">
 
                     <h2>Needs Human Check</h2>
 
                     <span class="column-label">
+
                         Review
+
                     </span>
 
                 </div>
@@ -785,17 +1373,20 @@
 
                     {% if task.status == 'needs_human_check' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="needs_human_check"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -804,23 +1395,23 @@
 
                             </a>
 
-                            <!-- Human Review Information -->
-
                             <div class="review-info">
 
                                 <strong>
+
                                     Human Review Required
+
                                 </strong>
 
                                 <p>
+
                                     Review the AI-generated changes
                                     and GitHub pull request before
                                     approving this task.
+
                                 </p>
 
                             </div>
-
-                            <!-- GitHub Branch and Pull Request -->
 
                             {% if task.ai_branch or task.pull_request_url %}
 
@@ -831,7 +1422,9 @@
                                         <strong>AI Branch</strong>
 
                                         <code class="branch-name">
+
                                             {{ task.ai_branch }}
+
                                         </code>
 
                                     {% endif %}
@@ -853,9 +1446,23 @@
 
                             {% endif %}
 
-                            <!-- Approve -->
+                            {% if not task.ai_branch or not task.pull_request_url %}
 
-                            <form method="POST" class="run-ai-form">
+                                <div class="warning-text">
+
+                                    GitHub branch or pull request
+                                    details are missing.
+                                    Verify the task before approval.
+
+                                </div>
+
+                            {% endif %}
+
+                            <!-- APPROVE TASK -->
+
+                            <form method="POST"
+                                  class="run-ai-form human-review-form"
+                                  data-review-action="approve">
 
                                 {% csrf_token %}
 
@@ -868,7 +1475,8 @@
                                        value="approve">
 
                                 <button type="submit"
-                                        class="run-ai-button approve-button">
+                                        class="run-ai-button approve-button"
+                                        {% if not task.ai_branch or not task.pull_request_url %}disabled{% endif %}>
 
                                     ✓ Approve
 
@@ -876,9 +1484,11 @@
 
                             </form>
 
-                            <!-- Send Back -->
+                            <!-- SEND BACK TASK -->
 
-                            <form method="POST" class="review-form">
+                            <form method="POST"
+                                  class="review-form human-review-form"
+                                  data-review-action="send_back">
 
                                 {% csrf_token %}
 
@@ -890,11 +1500,14 @@
                                        name="action"
                                        value="send_back">
 
-                                <label>
+                                <label for="feedback-{{ task.id }}">
+
                                     Feedback for AI (Required)
+
                                 </label>
 
                                 <textarea
+                                    id="feedback-{{ task.id }}"
                                     name="review_comment"
                                     rows="3"
                                     required
@@ -919,18 +1532,21 @@
 
             </div>
 
-            <!-- ========================= -->
-            <!-- Done Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 DONE COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="done">
 
                 <div class="column-header">
 
                     <h2>Done</h2>
 
                     <span class="column-label">
+
                         Completed
+
                     </span>
 
                 </div>
@@ -939,17 +1555,20 @@
 
                     {% if task.status == 'done' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="done"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -958,25 +1577,22 @@
 
                             </a>
 
-                            <!-- Human Approval -->
-
-                            <div class="review-info"
-                                 style="background: #dcfce7; color: #166534;">
+                            <div class="review-info approved">
 
                                 ✓ Approved by human reviewer
 
                                 {% if task.reviewed_at %}
 
                                     <p>
+
                                         Approved:
                                         {{ task.reviewed_at|date:"d M Y, h:i A" }}
+
                                     </p>
 
                                 {% endif %}
 
                             </div>
-
-                            <!-- GitHub Information -->
 
                             {% if task.ai_branch or task.pull_request_url %}
 
@@ -987,7 +1603,9 @@
                                         <strong>AI Branch</strong>
 
                                         <code class="branch-name">
+
                                             {{ task.ai_branch }}
+
                                         </code>
 
                                     {% endif %}
@@ -1017,18 +1635,21 @@
 
             </div>
 
-            <!-- ========================= -->
-            <!-- Sent Back Column -->
-            <!-- ========================= -->
+            <!-- ==================================
+                 SENT BACK COLUMN
+            ================================== -->
 
-            <div class="column">
+            <div class="column"
+                 data-column="sent_back">
 
                 <div class="column-header">
 
                     <h2>Sent Back</h2>
 
                     <span class="column-label">
+
                         Rework
+
                     </span>
 
                 </div>
@@ -1037,17 +1658,20 @@
 
                     {% if task.status == 'sent_back' %}
 
-                        <div class="task-card">
+                        <div class="task-card"
+                             data-status="sent_back"
+                             data-task-id="{{ task.id }}"
+                             data-task-order="{{ task.task_order }}">
 
                             <span class="task-number">
+
                                 Task #{{ task.task_order }}
+
                             </span>
 
                             <h3>{{ task.title }}</h3>
 
                             <p>{{ task.description }}</p>
-
-                            <!-- Report Bug -->
 
                             <a href="{% url 'report_bug' problem.id task.id %}"
                                class="report-bug-button">
@@ -1056,26 +1680,29 @@
 
                             </a>
 
-                            <!-- Human Review Feedback -->
-
                             {% if task.review_comment %}
 
-                                <div class="review-info"
-                                     style="background: #fef2f2; color: #991b1b;">
+                                <div class="review-info feedback">
 
                                     <strong>
+
                                         Human Review Feedback
+
                                     </strong>
 
                                     <p>
+
                                         {{ task.review_comment }}
+
                                     </p>
 
                                     {% if task.reviewed_at %}
 
                                         <small>
+
                                             Reviewed:
                                             {{ task.reviewed_at|date:"d M Y, h:i A" }}
+
                                         </small>
 
                                     {% endif %}
@@ -1084,16 +1711,20 @@
 
                             {% endif %}
 
-                            <!-- Re-run AI with Feedback -->
-
                             {% if task.ai_branch and task.pull_request_url %}
 
                                 <div class="github-info">
 
-                                    <strong>Existing AI Branch</strong>
+                                    <strong>
+
+                                        Existing AI Branch
+
+                                    </strong>
 
                                     <code class="branch-name">
+
                                         {{ task.ai_branch }}
+
                                     </code>
 
                                     <a href="{{ task.pull_request_url }}"
@@ -1109,12 +1740,14 @@
 
                                 <form method="POST"
                                       action="{% url 'run_ai_task' problem.id task.id %}"
-                                      class="run-ai-form">
+                                      class="run-ai-form ai-execution-form"
+                                      data-loading-message="AI is applying human feedback to the existing implementation.">
 
                                     {% csrf_token %}
 
                                     <button type="submit"
-                                            class="run-ai-button">
+                                            class="run-ai-button ai-execution-button"
+                                            {% if not task.review_comment %}disabled{% endif %}>
 
                                         🤖 Re-run AI with Feedback
 
@@ -1124,54 +1757,25 @@
 
                             {% else %}
 
-                                <p style="color: #dc2626; font-size: 12px;">
+                                <div class="warning-text">
 
-                                    Existing GitHub branch or pull request
-                                    details are missing.
+                                    Existing GitHub branch or
+                                    pull request details are missing.
 
-                                </p>
+                                </div>
 
                             {% endif %}
 
-                            <!-- Update Task Status -->
+                            {% if not task.review_comment %}
 
-                            <form method="POST"
-                                  class="status-form"
-                                  style="margin-top: 15px;">
+                                <div class="warning-text">
 
-                                {% csrf_token %}
+                                    Human review feedback is required
+                                    before running this task again.
 
-                                <input type="hidden"
-                                       name="task_id"
-                                       value="{{ task.id }}">
+                                </div>
 
-                                <input type="hidden"
-                                       name="action"
-                                       value="update_status">
-
-                                <label>Update Status</label>
-
-                                <select name="status"
-                                        onchange="this.form.submit()">
-
-                                    {% for value, label in status_choices %}
-
-                                        {% if value != 'done' and value != 'sent_back' %}
-
-                                            <option value="{{ value }}"
-                                                {% if task.status == value %}selected{% endif %}>
-
-                                                {{ label }}
-
-                                            </option>
-
-                                        {% endif %}
-
-                                    {% endfor %}
-
-                                </select>
-
-                            </form>
+                            {% endif %}
 
                         </div>
 
@@ -1184,6 +1788,661 @@
         </div>
 
     </div>
+
+    <!-- ==================================
+         AI LOADING OVERLAY
+    ================================== -->
+
+    <div class="loading-overlay"
+         id="loadingOverlay"
+         role="status"
+         aria-live="polite"
+         aria-hidden="true">
+
+        <div class="loading-card">
+
+            <div class="spinner"
+                 aria-hidden="true"></div>
+
+            <h2>AI Execution in Progress</h2>
+
+            <p id="loadingMessage">
+
+                BuildPilot is processing your task.
+
+            </p>
+
+            <div class="loading-note">
+
+                The AI may inspect repository files,
+                generate code, commit changes and create
+                a pull request.
+
+                <br><br>
+
+                Please wait for the execution to finish.
+                Do not submit another AI task.
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- ==================================
+         JAVASCRIPT
+    ================================== -->
+
+    <script>
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            function () {
+
+                let submissionInProgress = false;
+
+                const nextAiButton =
+                    document.getElementById("nextAiButton");
+
+                const executionStatus =
+                    document.getElementById("executionStatus");
+
+                const executionNote =
+                    document.getElementById("executionNote");
+
+                const loadingOverlay =
+                    document.getElementById("loadingOverlay");
+
+                const loadingMessage =
+                    document.getElementById("loadingMessage");
+
+                const aiForms =
+                    document.querySelectorAll(
+                        ".ai-execution-form"
+                    );
+
+                const reviewForms =
+                    document.querySelectorAll(
+                        ".human-review-form"
+                    );
+
+                const statusForms =
+                    document.querySelectorAll(
+                        ".status-form"
+                    );
+
+                const aiButtons =
+                    document.querySelectorAll(
+                        ".ai-execution-button"
+                    );
+
+                const initiallyDisabledButtons =
+                    new Map();
+
+                aiButtons.forEach(function (button) {
+
+                    initiallyDisabledButtons.set(
+                        button,
+                        button.disabled
+                    );
+
+                });
+
+                // ==================================
+                // 1. COUNT TASKS
+                // ==================================
+
+                function getTaskCounts() {
+
+                    const counts = {
+                        backlog: 0,
+                        ready_ai: 0,
+                        ai_building: 0,
+                        needs_human_check: 0,
+                        done: 0,
+                        sent_back: 0
+                    };
+
+                    document.querySelectorAll(
+                        ".task-card[data-status]"
+                    ).forEach(function (card) {
+
+                        const status =
+                            card.dataset.status;
+
+                        if (
+                            Object.prototype.hasOwnProperty.call(
+                                counts,
+                                status
+                            )
+                        ) {
+
+                            counts[status] += 1;
+
+                        }
+
+                    });
+
+                    return counts;
+
+                }
+
+                // ==================================
+                // 2. UPDATE STATISTICS
+                // ==================================
+
+                function updateStatistics(counts) {
+
+                    document.getElementById(
+                        "backlogCount"
+                    ).textContent = counts.backlog;
+
+                    document.getElementById(
+                        "readyCount"
+                    ).textContent = counts.ready_ai;
+
+                    document.getElementById(
+                        "buildingCount"
+                    ).textContent = counts.ai_building;
+
+                    document.getElementById(
+                        "reviewCount"
+                    ).textContent = counts.needs_human_check;
+
+                    document.getElementById(
+                        "doneCount"
+                    ).textContent = counts.done;
+
+                    document.getElementById(
+                        "sentBackCount"
+                    ).textContent = counts.sent_back;
+
+                }
+
+                // ==================================
+                // 3. DISPLAY EMPTY COLUMNS
+                // ==================================
+
+                function updateEmptyColumns() {
+
+                    const emptyMessages = {
+                        backlog:
+                            "No tasks in backlog.",
+
+                        ready_ai:
+                            "No tasks ready for AI.",
+
+                        ai_building:
+                            "No AI tasks currently running.",
+
+                        needs_human_check:
+                            "No tasks awaiting human review.",
+
+                        done:
+                            "No completed tasks yet.",
+
+                        sent_back:
+                            "No tasks sent back for rework."
+                    };
+
+                    document.querySelectorAll(
+                        ".column[data-column]"
+                    ).forEach(function (column) {
+
+                        const cards =
+                            column.querySelectorAll(
+                                ".task-card"
+                            );
+
+                        const existingMessage =
+                            column.querySelector(
+                                ".empty-message"
+                            );
+
+                        if (cards.length === 0) {
+
+                            if (!existingMessage) {
+
+                                const message =
+                                    document.createElement("div");
+
+                                message.className =
+                                    "empty-message";
+
+                                message.textContent =
+                                    emptyMessages[
+                                        column.dataset.column
+                                    ] || "No tasks available.";
+
+                                column.appendChild(message);
+
+                            }
+
+                        } else if (existingMessage) {
+
+                            existingMessage.remove();
+
+                        }
+
+                    });
+
+                }
+
+                // ==================================
+                // 4. FIND NEXT ELIGIBLE TASK
+                // ==================================
+
+                function highlightNextTask() {
+
+                    document.querySelectorAll(
+                        ".next-task"
+                    ).forEach(function (card) {
+
+                        card.classList.remove("next-task");
+
+                    });
+
+                    const readyCards = Array.from(
+                        document.querySelectorAll(
+                            '.task-card[data-status="ready_ai"]'
+                        )
+                    );
+
+                    readyCards.sort(function (first, second) {
+
+                        const orderDifference =
+                            Number(first.dataset.taskOrder) -
+                            Number(second.dataset.taskOrder);
+
+                        if (orderDifference !== 0) {
+
+                            return orderDifference;
+
+                        }
+
+                        return (
+                            Number(first.dataset.taskId) -
+                            Number(second.dataset.taskId)
+                        );
+
+                    });
+
+                    if (readyCards.length > 0) {
+
+                        readyCards[0].classList.add(
+                            "next-task"
+                        );
+
+                        return readyCards[0];
+
+                    }
+
+                    return null;
+
+                }
+
+                // ==================================
+                // 5. UPDATE AI BUTTON AVAILABILITY
+                // ==================================
+
+                function updateExecutionPanel(counts) {
+
+                    const nextTask = highlightNextTask();
+
+                    executionStatus.className =
+                        "execution-status";
+
+                    aiButtons.forEach(function (button) {
+
+                        button.disabled =
+                            initiallyDisabledButtons.get(button) ||
+                            counts.ai_building > 0 ||
+                            submissionInProgress;
+
+                    });
+
+                    if (counts.ai_building > 0) {
+
+                        nextAiButton.disabled = true;
+
+                        executionStatus.classList.add(
+                            "running"
+                        );
+
+                        executionStatus.textContent =
+                            "AI task marked as building";
+
+                        executionNote.textContent =
+                            "Wait for the current task to finish.";
+
+                        return;
+
+                    }
+
+                    if (counts.ready_ai === 0) {
+
+                        nextAiButton.disabled = true;
+
+                        executionStatus.classList.add(
+                            "idle"
+                        );
+
+                        executionStatus.textContent =
+                            "No tasks ready for AI";
+
+                        executionNote.textContent =
+                            "Move a backlog task to Ready for AI.";
+
+                        return;
+
+                    }
+
+                    nextAiButton.disabled =
+                        submissionInProgress;
+
+                    executionStatus.classList.add(
+                        "ready"
+                    );
+
+                    executionStatus.textContent =
+                        counts.ready_ai +
+                        " task(s) ready for AI";
+
+                    if (nextTask) {
+
+                        const taskTitle =
+                            nextTask.querySelector("h3");
+
+                        executionNote.textContent =
+                            "Next: Task #" +
+                            nextTask.dataset.taskOrder +
+                            " — " +
+                            (
+                                taskTitle
+                                    ? taskTitle.textContent.trim()
+                                    : "Ready task"
+                            );
+
+                    }
+
+                }
+
+                // ==================================
+                // 6. AI EXECUTION LOADING STATE
+                // ==================================
+
+                function showLoading(message) {
+
+                    loadingMessage.textContent =
+                        message ||
+                        "BuildPilot is processing your task.";
+
+                    loadingOverlay.classList.add(
+                        "active"
+                    );
+
+                    loadingOverlay.setAttribute(
+                        "aria-hidden",
+                        "false"
+                    );
+
+                    document.body.style.overflow =
+                        "hidden";
+
+                }
+
+                // ==================================
+                // 7. PREVENT DUPLICATE SUBMISSIONS
+                // ==================================
+
+                function disableActionControls() {
+
+                    document.querySelectorAll(
+                        'button[type="submit"], .status-form select'
+                    ).forEach(function (control) {
+
+                        control.disabled = true;
+
+                    });
+
+                }
+
+                // ==================================
+                // 8. HANDLE AI EXECUTION
+                // ==================================
+
+                aiForms.forEach(function (form) {
+
+                    form.addEventListener(
+                        "submit",
+                        function (event) {
+
+                            if (submissionInProgress) {
+
+                                event.preventDefault();
+
+                                return;
+
+                            }
+
+                            const counts = getTaskCounts();
+
+                            if (counts.ai_building > 0) {
+
+                                event.preventDefault();
+
+                                alert(
+                                    "An AI task is already marked as building. " +
+                                    "Refresh the board before continuing."
+                                );
+
+                                return;
+
+                            }
+
+                            if (
+                                form.id === "nextAiForm" &&
+                                counts.ready_ai === 0
+                            ) {
+
+                                event.preventDefault();
+
+                                alert(
+                                    "No tasks are currently Ready for AI."
+                                );
+
+                                return;
+
+                            }
+
+                            submissionInProgress = true;
+
+                            const button =
+                                form.querySelector(
+                                    'button[type="submit"]'
+                                );
+
+                            if (button) {
+
+                                button.textContent =
+                                    "AI is processing...";
+
+                            }
+
+                            showLoading(
+                                form.dataset.loadingMessage
+                            );
+
+                            disableActionControls();
+
+                        }
+                    );
+
+                });
+
+                // ==================================
+                // 9. HANDLE HUMAN REVIEW
+                // ==================================
+
+                reviewForms.forEach(function (form) {
+
+                    form.addEventListener(
+                        "submit",
+                        function (event) {
+
+                            if (submissionInProgress) {
+
+                                event.preventDefault();
+
+                                return;
+
+                            }
+
+                            const action =
+                                form.dataset.reviewAction;
+
+                            if (action === "approve") {
+
+                                const confirmed = confirm(
+                                    "Have you reviewed the generated code " +
+                                    "and verified the pull request? " +
+                                    "Approve this task?"
+                                );
+
+                                if (!confirmed) {
+
+                                    event.preventDefault();
+
+                                    return;
+
+                                }
+
+                            }
+
+                            if (action === "send_back") {
+
+                                const feedback =
+                                    form.querySelector(
+                                        'textarea[name="review_comment"]'
+                                    );
+
+                                if (
+                                    !feedback ||
+                                    !feedback.value.trim()
+                                ) {
+
+                                    event.preventDefault();
+
+                                    alert(
+                                        "Please provide feedback before " +
+                                        "sending the task back."
+                                    );
+
+                                    if (feedback) {
+
+                                        feedback.focus();
+
+                                    }
+
+                                    return;
+
+                                }
+
+                                const confirmed = confirm(
+                                    "Send this task back to AI for rework?"
+                                );
+
+                                if (!confirmed) {
+
+                                    event.preventDefault();
+
+                                    return;
+
+                                }
+
+                            }
+
+                            submissionInProgress = true;
+
+                            disableActionControls();
+
+                        }
+                    );
+
+                });
+
+                // ==================================
+                // 10. HANDLE STATUS UPDATES
+                // ==================================
+
+                statusForms.forEach(function (form) {
+
+                    form.addEventListener(
+                        "submit",
+                        function (event) {
+
+                            if (submissionInProgress) {
+
+                                event.preventDefault();
+
+                                return;
+
+                            }
+
+                            submissionInProgress = true;
+
+                            /*
+                            Do not disable the selected status
+                            before the browser submits the form.
+                            Disabled fields are not submitted.
+                            */
+
+                            document.querySelectorAll(
+                                'button[type="submit"]'
+                            ).forEach(function (button) {
+
+                                button.disabled = true;
+
+                            });
+
+                        }
+                    );
+
+                });
+
+                // ==================================
+                // 11. INITIALIZE TASK BOARD
+                // ==================================
+
+                const counts = getTaskCounts();
+
+                updateStatistics(counts);
+
+                updateEmptyColumns();
+
+                updateExecutionPanel(counts);
+
+                // ==================================
+                // 12. HANDLE BROWSER BACK NAVIGATION
+                // ==================================
+
+                window.addEventListener(
+                    "pageshow",
+                    function (event) {
+
+                        if (event.persisted) {
+
+                            window.location.reload();
+
+                        }
+
+                    }
+                );
+
+            }
+        );
+
+    </script>
 
 </body>
 

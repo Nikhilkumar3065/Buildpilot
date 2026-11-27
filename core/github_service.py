@@ -53,14 +53,23 @@ def validate_file_path(file_path):
     if (
         file_path.startswith("/")
         or "\\" in file_path
-        or any(part in ("", ".", "..") for part in file_path.split("/"))
+        or any(
+            part in ("", ".", "..")
+            for part in file_path.split("/")
+        )
     ):
         raise ValueError("Invalid file path.")
 
 
+# ==========================================
+# GET REPOSITORY INFORMATION
+# ==========================================
+
 def get_repository_info():
     if not GITHUB_OWNER or not GITHUB_REPO:
-        raise ValueError("GitHub repository configuration is missing.")
+        raise ValueError(
+            "GitHub repository configuration is missing."
+        )
 
     url = (
         f"{GITHUB_API_URL}/repos/"
@@ -82,7 +91,138 @@ def get_repository_info():
     return response.json()
 
 
+# ==========================================
+# LIST REPOSITORY FILES
+# ==========================================
+
+def list_files(branch="main", directory=""):
+
+    if not GITHUB_OWNER or not GITHUB_REPO:
+        raise ValueError(
+            "GitHub repository configuration is missing."
+        )
+
+    if branch != "main":
+        validate_ai_branch(branch)
+
+    if not isinstance(directory, str):
+        raise ValueError("Directory must be text.")
+
+    if directory:
+        validate_file_path(directory)
+
+    headers = get_github_headers()
+
+    encoded_branch = quote(branch, safe="")
+
+    # Retrieve the Git tree for the selected branch.
+
+    url = (
+        f"{GITHUB_API_URL}/repos/"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+        f"git/trees/{encoded_branch}"
+    )
+
+    response = requests.get(
+        url,
+        headers=headers,
+        params={"recursive": "1"},
+        timeout=30,
+    )
+
+    if response.status_code == 404:
+        raise FileNotFoundError(
+            f"Branch or repository tree not found: {branch}"
+        )
+
+    if not response.ok:
+        raise RuntimeError(
+            f"GitHub file listing failed: "
+            f"HTTP {response.status_code}"
+        )
+
+    data = response.json()
+
+    tree = data.get("tree", [])
+
+    files = []
+    directories = []
+
+    directory_prefix = (
+        f"{directory}/" if directory else ""
+    )
+
+    directory_exists = not directory
+
+    for item in tree:
+
+        path = item.get("path", "")
+        item_type = item.get("type", "")
+
+        if not path:
+            continue
+
+        if path == directory and item_type == "tree":
+            directory_exists = True
+
+        # Return only files inside the requested directory.
+
+        if directory_prefix:
+            if not path.startswith(directory_prefix):
+                continue
+
+            directory_exists = True
+
+        if item_type == "blob":
+            files.append(path)
+
+        elif item_type == "tree":
+            directories.append(path)
+
+    github_truncated = bool(
+        data.get("truncated", False)
+    )
+
+    if not directory_exists and not github_truncated:
+        raise FileNotFoundError(
+            f"Directory not found: {directory}"
+        )
+
+    files.sort()
+    directories.sort()
+
+    # Limit output size to avoid excessive AI token usage.
+
+    max_files = 500
+    max_directories = 200
+
+    total_files = len(files)
+    total_directories = len(directories)
+
+    output_truncated = (
+        total_files > max_files
+        or total_directories > max_directories
+    )
+
+    return {
+        "branch": branch,
+        "directory": directory or "/",
+        "total_files": total_files,
+        "total_directories": total_directories,
+        "files": files[:max_files],
+        "directories": directories[:max_directories],
+        "truncated": (
+            github_truncated or output_truncated
+        ),
+    }
+
+
+# ==========================================
+# READ REPOSITORY FILE
+# ==========================================
+
 def read_file(file_path, branch="main"):
+
     validate_file_path(file_path)
 
     if branch != "main":
@@ -92,7 +232,8 @@ def read_file(file_path, branch="main"):
 
     url = (
         f"{GITHUB_API_URL}/repos/"
-        f"{GITHUB_OWNER}/{GITHUB_REPO}/contents/{encoded_path}"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+        f"contents/{encoded_path}"
     )
 
     response = requests.get(
@@ -116,7 +257,9 @@ def read_file(file_path, branch="main"):
     data = response.json()
 
     if data.get("type") != "file":
-        raise ValueError("The requested path is not a file.")
+        raise ValueError(
+            "The requested path is not a file."
+        )
 
     content = base64.b64decode(
         data["content"]
@@ -125,11 +268,14 @@ def read_file(file_path, branch="main"):
     return content
 
 
+# ==========================================
+# CREATE AI BRANCH
+# ==========================================
+
 def create_branch(branch_name, base_branch="main"):
 
     validate_ai_branch(branch_name)
 
-    # Allow only main or a valid AI branch as the source.
     if base_branch != "main":
         validate_ai_branch(base_branch)
 
@@ -187,7 +333,17 @@ def create_branch(branch_name, base_branch="main"):
     return response.json()
 
 
-def commit_and_push(file_path, content, branch_name, commit_message):
+# ==========================================
+# COMMIT AND PUSH FILE
+# ==========================================
+
+def commit_and_push(
+    file_path,
+    content,
+    branch_name,
+    commit_message
+):
+
     validate_ai_branch(branch_name)
     validate_file_path(file_path)
 
@@ -198,14 +354,15 @@ def commit_and_push(file_path, content, branch_name, commit_message):
         raise ValueError("Commit message is required.")
 
     headers = get_github_headers()
+
     encoded_path = quote(file_path, safe="/")
 
     file_url = (
         f"{GITHUB_API_URL}/repos/"
-        f"{GITHUB_OWNER}/{GITHUB_REPO}/contents/{encoded_path}"
+        f"{GITHUB_OWNER}/{GITHUB_REPO}/"
+        f"contents/{encoded_path}"
     )
 
-    # Check whether the file already exists on the AI branch.
     existing_response = requests.get(
         file_url,
         headers=headers,
@@ -216,21 +373,24 @@ def commit_and_push(file_path, content, branch_name, commit_message):
     file_sha = None
 
     if existing_response.status_code == 200:
+
         existing_data = existing_response.json()
 
         if existing_data.get("type") != "file":
-            raise ValueError("The requested path is not a file.")
+            raise ValueError(
+                "The requested path is not a file."
+            )
 
         file_sha = existing_data["sha"]
 
     elif existing_response.status_code != 404:
+
         raise Exception(
             f"Could not check existing file: "
             f"{existing_response.status_code}: "
             f"{existing_response.text}"
         )
 
-    # Encode the new file content.
     encoded_content = base64.b64encode(
         content.encode("utf-8")
     ).decode("utf-8")
@@ -241,7 +401,6 @@ def commit_and_push(file_path, content, branch_name, commit_message):
         "branch": branch_name,
     }
 
-    # Include SHA when updating an existing file.
     if file_sha:
         payload["sha"] = file_sha
 
@@ -259,6 +418,12 @@ def commit_and_push(file_path, content, branch_name, commit_message):
         )
 
     return response.json()
+
+
+# ==========================================
+# OPEN PULL REQUEST
+# ==========================================
+
 def open_pull_request(
     branch_name,
     title,

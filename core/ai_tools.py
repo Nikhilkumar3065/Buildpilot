@@ -1,5 +1,6 @@
 
 from core.github_service import (
+    list_files,
     read_file,
     create_branch,
     commit_and_push,
@@ -13,6 +14,38 @@ from core.github_service import (
 # ==========================================
 
 TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "list_files",
+            "description": (
+                "Discover files and directories in the "
+                "demo repository. Use this tool before "
+                "reading or modifying existing source files."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "branch": {
+                        "type": "string",
+                        "description": (
+                            "Authorized branch to inspect. "
+                            "Defaults to the assigned base branch."
+                        )
+                    },
+                    "directory": {
+                        "type": "string",
+                        "description": (
+                            "Optional directory path. "
+                            "Use an empty string for the "
+                            "entire repository."
+                        )
+                    }
+                },
+                "required": []
+            }
+        }
+    },
     {
         "type": "function",
         "function": {
@@ -159,8 +192,12 @@ def execute_tool(
             "Tool arguments must be a dictionary."
         )
 
-    # Validate the backend-assigned base branch.
+    # ==========================================
+    # VALIDATE BACKEND-ASSIGNED BASE BRANCH
+    # ==========================================
+
     if base_branch != "main":
+
         validate_ai_branch(base_branch)
 
         if required_branch is None:
@@ -169,7 +206,10 @@ def execute_tool(
                 "when using a non-main base branch."
             )
 
-    # Validate the backend-assigned destination branch.
+    # ==========================================
+    # VALIDATE ASSIGNED DESTINATION BRANCH
+    # ==========================================
+
     if required_branch is not None:
 
         validate_ai_branch(required_branch)
@@ -181,9 +221,58 @@ def execute_tool(
             )
 
     # AI cannot override the backend-selected base.
+
     if "base_branch" in arguments:
         raise ValueError(
             "AI cannot select or override the base branch."
+        )
+
+    # ==========================================
+    # VALIDATE READ OPERATIONS
+    # ==========================================
+
+    read_tools = {
+        "list_files",
+        "read_file"
+    }
+
+    if tool_name in read_tools:
+
+        branch = arguments.get(
+            "branch",
+            base_branch
+        )
+
+        if not isinstance(branch, str):
+            raise ValueError(
+                "Branch name must be text."
+            )
+
+        allowed_branches = {
+            "main",
+            base_branch
+        }
+
+        if required_branch is not None:
+            allowed_branches.add(required_branch)
+
+        if branch not in allowed_branches:
+            raise ValueError(
+                "Reading from this branch is not allowed."
+            )
+
+    # ==========================================
+    # LIST REPOSITORY FILES
+    # ==========================================
+
+    if tool_name == "list_files":
+
+        return list_files(
+            branch=branch,
+            directory=arguments.get(
+                "directory",
+                ""
+            )
         )
 
     # ==========================================
@@ -191,24 +280,6 @@ def execute_tool(
     # ==========================================
 
     if tool_name == "read_file":
-
-        branch = arguments.get(
-            "branch",
-            base_branch
-        )
-
-        if required_branch is not None:
-
-            allowed_branches = {
-                "main",
-                base_branch,
-                required_branch
-            }
-
-            if branch not in allowed_branches:
-                raise ValueError(
-                    "Reading from this branch is not allowed."
-                )
 
         return read_file(
             file_path=arguments["file_path"],
@@ -227,17 +298,21 @@ def execute_tool(
 
     if tool_name in write_tools:
 
+        if required_branch is None:
+            raise ValueError(
+                "An assigned AI branch is required "
+                "for write operations."
+            )
+
         branch_name = arguments["branch_name"]
 
         validate_ai_branch(branch_name)
 
-        if required_branch is not None:
-
-            if branch_name != required_branch:
-                raise ValueError(
-                    "AI can operate only on its "
-                    "assigned branch."
-                )
+        if branch_name != required_branch:
+            raise ValueError(
+                "AI can operate only on its "
+                "assigned branch."
+            )
 
         if branch_name == base_branch:
             raise ValueError(
@@ -281,7 +356,10 @@ def execute_tool(
             base_branch=base_branch
         )
 
-    # Reject unsupported tools.
+    # ==========================================
+    # REJECT UNSUPPORTED TOOLS
+    # ==========================================
+
     raise ValueError(
         f"Unknown tool: {tool_name}"
     )
