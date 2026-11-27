@@ -470,7 +470,7 @@ OPENROUTER_API_KEY=
 
 GITHUB_TOKEN=
 GITHUB_OWNER=
-GITHUB_REPO=buildpilot-demo-output
+GITHUB_REPO=https://github.com/Nikhilkumar3065/buildpilot-demo-output.git
 
 
 Replace the empty values with your own configuration.
